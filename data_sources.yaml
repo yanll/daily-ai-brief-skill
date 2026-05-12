@@ -1,56 +1,54 @@
-# AI新闻数据源配置（优化版）
-# 基于实际AI新闻渠道配置
+# AI新闻数据源配置（修复版）
+# 更新为实际可用的AI新闻RSS源
 
 # RSS数据源配置
 rss_sources:
-  # IT之家 - AI相关新闻
-  - name: "IT之家 AI新闻"
+  # IT之家 - 技术新闻（包含AI相关内容）
+  - name: "IT之家 技术新闻"
     url: "https://www.ithome.com/rss/"
     language: "zh"
     category: "industry"
     enabled: true
     priority: 1
-    num_items: 5  # 该渠道默认采集条数
+    num_items: 10  # 该渠道默认采集条数
     filters:
-      include_keywords: ["AI", "人工智能", "OpenAI", "模型", "芯片"]
+      include_keywords: ["AI", "人工智能", "OpenAI", "模型", "芯片", "GPT", "Claude", "深度学习", "机器学习"]
     
-  # Apple机器学习研究
-  - name: "Apple机器学习研究"
-    url: "https://machinelearning.apple.com/rss/research.xml"
+  # MIT Technology Review - AI专题
+  - name: "MIT Technology Review AI"
+    url: "https://www.technologyreview.com/topic/artificial-intelligence/feed/"
+    language: "en"
+    category: "research"
+    enabled: true
+    priority: 1
+    num_items: 8  # 该渠道默认采集条数
+    
+  # VentureBeat AI
+  - name: "VentureBeat AI"
+    url: "https://venturebeat.com/category/ai/feed/"
+    language: "en"
+    category: "industry"
+    enabled: true
+    priority: 2
+    num_items: 8  # 该渠道默认采集条数
+    
+  # Analytics India Magazine
+  - name: "Analytics India Magazine"
+    url: "https://analyticsindiamag.com/feed/"
     language: "en"
     category: "research"
     enabled: true
     priority: 2
-    num_items: 5  # 该渠道默认采集条数
+    num_items: 6  # 该渠道默认采集条数
     
-  # Anthropic Claude Code Releases
-  - name: "Claude Code Releases"
-    url: "https://github.com/anthropics/claude-code/releases.atom"
+  # AI News
+  - name: "Artificial Intelligence News"
+    url: "https://www.artificialintelligence-news.com/feed/"
     language: "en"
-    category: "product"
+    category: "industry"
     enabled: true
     priority: 1
-    num_items: 5  # 该渠道默认采集条数
-    
-  # OpenAI官方博客
-  - name: "OpenAI官方博客"
-    url: "https://openai.com/blog/rss/"
-    language: "en"
-    category: "product"
-    enabled: true
-    priority: 1
-    num_items: 5  # 该渠道默认采集条数
-    filters:
-      exclude_keywords: ["customer", "case study", "企业案例"]
-    
-  # Simon Willison博客（AI技巧）
-  - name: "Simon Willison博客"
-    url: "https://simonwillison.net/atom/ai"
-    language: "en"
-    category: "tips"
-    enabled: true
-    priority: 3
-    num_items: 5  # 该渠道默认采集条数
+    num_items: 8  # 该渠道默认采集条数
 
 # X/Twitter数据源（通过Nitter或类似服务）
 x_sources:
@@ -138,21 +136,16 @@ web_scrapers:
     priority: 3
     num_items: 5  # 该渠道默认采集条数
 
-# API数据源配置
+# API数据源配置（暂时禁用，需要API密钥）
 api_sources:
   - name: "GitHub Releases API"
     type: "github"
     endpoint: "https://api.github.com/repos/{owner}/{repo}/releases"
     params:
       per_page: 10
-    enabled: true
+    enabled: false  # 暂时禁用，需要修复URL格式和认证
     priority: 2
     num_items: 5  # 该渠道默认采集条数
-    repositories:
-      - owner: "anthropics"
-        repo: "claude-code"
-      - owner: "op7418"
-        repo: "guizang-ppt"
 
 # 数据获取配置
 fetch_config:

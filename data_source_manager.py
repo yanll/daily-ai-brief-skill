@@ -151,13 +151,25 @@ class DataSourceManager:
                 description = getattr(entry, 'description', '')
                 link = getattr(entry, 'link', '')
                 
+                # 检查是否包含需要的关键词（如果配置了include_keywords）
+                include_keywords = source_config.get("filters", {}).get("include_keywords", [])
+                if include_keywords:
+                    content_text = (title + " " + description).lower()
+                    has_include_keyword = False
+                    for keyword in include_keywords:
+                        if keyword.lower() in content_text:
+                            has_include_keyword = True
+                            break
+                    if not has_include_keyword:
+                        continue  # 不包含所需关键词，跳过
+                
                 # 过滤广告内容
                 if self.contains_excluded_keywords(title + " " + description):
                     continue
                 
                 # 检查内容长度
-                min_length = self.config.get("fetch_config", {}).get("min_content_length", 50)
-                max_length = self.config.get("fetch_config", {}).get("max_content_length", 1000)
+                min_length = self.config.get("fetch_config", {}).get("min_content_length", 30)  # 降低最小长度
+                max_length = self.config.get("fetch_config", {}).get("max_content_length", 2000)  # 增加最大长度
                 
                 content = description or title
                 if len(content) < min_length or len(content) > max_length:
