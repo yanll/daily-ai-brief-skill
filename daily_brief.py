@@ -214,7 +214,7 @@ class EnhancedAIBrief:
         report_lines.extend([
             "",
             "---",
-            f"*生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*"
+            f"*数据采集时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*"
         ])
 
         return "\n".join(report_lines)
