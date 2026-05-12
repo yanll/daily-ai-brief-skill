@@ -362,53 +362,96 @@ class DataSourceManager:
         return default_category
     
     def fetch_all_sources(self) -> List[Dict]:
-        """从所有启用的数据源获取数据（每个渠道独立采集，采集不到就空着）"""
+        """从所有启用的数据源获取数据（增强版，带进度报告和容错）"""
         all_items = []
+        successful_sources = 0
+        total_sources = 0
+        
+        print("📡 开始从所有数据源采集数据...")
         
         # 获取RSS源数据
         rss_sources = self.config.get("rss_sources", [])
-        for source in rss_sources:
-            if source.get("enabled", False):
-                try:
-                    items = self.fetch_rss_source(source)
+        enabled_rss_sources = [s for s in rss_sources if s.get("enabled", False)]
+        total_sources += len(enabled_rss_sources)
+        
+        for i, source in enumerate(enabled_rss_sources, 1):
+            source_name = source.get('name', f'RSS源{i}')
+            print(f"\n[{i}/{len(enabled_rss_sources)}] 🔍 采集 {source_name}...")
+            
+            try:
+                items = self.fetch_rss_source(source)
+                if items:
                     all_items.extend(items)
-                    print(f"✅ 渠道 {source.get('name')} 采集到 {len(items)} 条数据")
-                except Exception as e:
-                    print(f"⚠️ 渠道 {source.get('name')} 采集失败: {e}")
-                    # 失败时不添加任何数据，保持为空
-                
-                # 避免请求过快
-                time.sleep(0.5)
+                    successful_sources += 1
+                    print(f"   ✅ 采集到 {len(items)} 条数据")
+                else:
+                    print(f"   📭 未采集到数据")
+            except Exception as e:
+                print(f"   ❌ 采集失败: {e}")
+                # 失败时不添加任何数据，保持为空
+            
+            # 避免请求过快，但有随机性避免被屏蔽
+            time.sleep(0.5 + random.random() * 0.5)
         
         # 获取API源数据
         api_sources = self.config.get("api_sources", [])
-        for source in api_sources:
-            if source.get("enabled", False):
-                try:
-                    items = self.fetch_api_source(source)
+        enabled_api_sources = [s for s in api_sources if s.get("enabled", False)]
+        total_sources += len(enabled_api_sources)
+        
+        for i, source in enumerate(enabled_api_sources, 1):
+            source_name = source.get('name', f'API源{i}')
+            print(f"\n[{i}/{len(enabled_api_sources)}] 🔍 采集 {source_name}...")
+            
+            try:
+                items = self.fetch_api_source(source)
+                if items:
                     all_items.extend(items)
-                    print(f"✅ 渠道 {source.get('name')} 采集到 {len(items)} 条数据")
-                except Exception as e:
-                    print(f"⚠️ 渠道 {source.get('name')} 采集失败: {e}")
-                    # 失败时不添加任何数据，保持为空
-                
-                # 避免请求过快
-                time.sleep(1)
+                    successful_sources += 1
+                    print(f"   ✅ 采集到 {len(items)} 条数据")
+                else:
+                    print(f"   📭 未采集到数据")
+            except Exception as e:
+                print(f"   ❌ 采集失败: {e}")
+                # 失败时不添加任何数据，保持为空
+            
+            # 避免请求过快
+            time.sleep(1 + random.random())
         
         # 按发布时间排序（最新的在前）
         all_items.sort(key=lambda x: x.get("published", ""), reverse=True)
         
-        # 去重（基于标题）
-        seen_titles = set()
+        # 去重（基于标题和链接的组合）
+        seen_keys = set()
         unique_items = []
         
         for item in all_items:
-            title = item.get("title", "").strip()
-            if title and title not in seen_titles:
-                seen_titles.add(title)
-                unique_items.append(item)
+            title = item.get("title", "").strip().lower()
+            link = item.get("link", "").strip().lower()
+            
+            # 创建唯一键
+            if title:
+                key = title[:100]  # 使用标题前100字符作为键
+                if link:
+                    key = f"{title[:50]}|{link[:50]}"
+                
+                if key not in seen_keys:
+                    seen_keys.add(key)
+                    unique_items.append(item)
         
-        print(f"📊 总计采集到 {len(unique_items)} 条唯一数据")
+        print(f"\n📊 采集结果汇总:")
+        print(f"   📡 数据源: {successful_sources}/{total_sources} 个成功")
+        print(f"   📄 原始数据: {len(all_items)} 条")
+        print(f"   🎯 唯一数据: {len(unique_items)} 条")
+        
+        if unique_items:
+            # 显示一些示例数据
+            print(f"\n📰 示例数据 (前3条):")
+            for i, item in enumerate(unique_items[:3], 1):
+                title = item.get("title", "无标题")
+                source = item.get("source", "未知来源")
+                category = item.get("category", "未知分类")
+                print(f"   {i}. [{source}] {title[:60]}... ({category})")
+        
         return unique_items
     
     def get_ai_news_summary(self) -> Dict[str, Any]:

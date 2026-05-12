@@ -94,25 +94,56 @@ class EnhancedAIBrief:
 
     
     def categorize_content(self, content: str) -> str:
-        """根据内容分类"""
+        """根据内容分类（改进版）"""
         content_lower = content.lower()
         
-        if any(keyword in content_lower for keyword in ["模型", "gpt", "claude", "参数", "llm"]):
-            return "模型发布/更新"
-        elif any(keyword in content_lower for keyword in ["工具", "产品", "应用", "平台", "开源"]):
-            return "产品发布/更新"
-        elif any(keyword in content_lower for keyword in ["研究", "论文", "学术", "突破", "框架"]):
-            return "论文研究"
-        elif any(keyword in content_lower for keyword in ["行业", "融资", "ipo", "估值", "市场"]):
-            return "行业动态"
-        elif any(keyword in content_lower for keyword in ["安全", "伦理", "合规", "监管"]):
-            return "安全伦理"
-        elif any(keyword in content_lower for keyword in ["硬件", "芯片", "算力", "基础设施"]):
+        # 优先级顺序很重要，先检查更具体的分类
+        
+        # 1. 硬件相关（包含芯片关键词）
+        if any(keyword in content_lower for keyword in ["芯片", "gpu", "tpu", "处理器", "英伟达", "nvidia", "英特尔", "intel"]):
             return "硬件发展"
-        elif any(keyword in content_lower for keyword in ["政策", "法规", "标准", "指南"]):
+        
+        # 2. 模型相关（特定模型名称和参数）
+        if any(keyword in content_lower for keyword in ["gpt-", "gpt4", "gpt-4", "gpt5", "gpt-5", "llama", "gemini", "claude 3", "claude-3", "参数", "token", "上下文"]):
+            return "模型发布/更新"
+        
+        # 3. 产品/工具相关（包含具体产品类型）
+        if any(keyword in content_lower for keyword in ["工具", "编辑器", "ide", "平台", "应用", "软件", "系统", "界面", "开源"]):
+            return "产品发布/更新"
+        
+        # 4. 研究/论文相关
+        if any(keyword in content_lower for keyword in ["论文", "顶会", "acm", "期刊", "实验室", "研究院", "学术"]):
+            return "论文研究"
+        
+        # 5. 行业/商业相关
+        if any(keyword in content_lower for keyword in ["融资", "ipo", "估值", "投资", "市值", "营收", "利润", "市场", "竞争"]):
+            return "行业动态"
+        
+        # 6. 安全/合规相关
+        if any(keyword in content_lower for keyword in ["安全", "漏洞", "攻击", "防御", "合规", "监管", "法律", "隐私"]):
+            return "安全伦理"
+        
+        # 7. 政策/法规相关
+        if any(keyword in content_lower for keyword in ["政策", "法规", "标准", "指南", "白皮书", "立法"]):
             return "政策动态"
-        else:
-            return "其他"
+        
+        # 8. 通用模型相关（放在后面，避免误判）
+        if any(keyword in content_lower for keyword in ["模型", "gpt", "claude", "llm", "大模型"]):
+            return "模型发布/更新"
+        
+        # 9. 通用产品相关
+        if any(keyword in content_lower for keyword in ["产品", "发布", "推出", "上线", "更新", "版本"]):
+            return "产品发布/更新"
+        
+        # 10. 通用研究相关
+        if any(keyword in content_lower for keyword in ["研究", "突破", "创新", "发现", "实验"]):
+            return "论文研究"
+        
+        # 11. 通用行业相关
+        if any(keyword in content_lower for keyword in ["行业", "产业", "生态", "合作伙伴", "合作"]):
+            return "行业动态"
+        
+        return "其他"
     
     def generate_daily_brief(self) -> Dict[str, Any]:
         """生成每日AI简报（只使用真实数据源）"""
