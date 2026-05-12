@@ -1,20 +1,20 @@
 # AI新闻数据源配置（修复版）
 # 更新为实际可用的AI新闻RSS源
 
-# RSS数据源配置
+# RSS数据源配置（优化版 - 使用可靠来源）
 rss_sources:
-  # IT之家 - 技术新闻（包含AI相关内容）
-  - name: "IT之家 技术新闻"
-    url: "https://www.ithome.com/rss/"
+  # 36氪 - AI/科技新闻（国内可靠来源）
+  - name: "36氪 AI科技"
+    url: "https://www.36kr.com/feed"
     language: "zh"
     category: "industry"
     enabled: true
     priority: 1
     num_items: 10  # 该渠道默认采集条数
     filters:
-      include_keywords: ["AI", "人工智能", "OpenAI", "模型", "芯片", "GPT", "Claude", "深度学习", "机器学习"]
+      include_keywords: ["AI", "人工智能", "OpenAI", "模型", "芯片", "GPT", "Claude", "深度学习", "机器学习", "大模型"]
     
-  # MIT Technology Review - AI专题
+  # MIT Technology Review - AI专题（已验证可用）
   - name: "MIT Technology Review AI"
     url: "https://www.technologyreview.com/topic/artificial-intelligence/feed/"
     language: "en"
@@ -23,32 +23,59 @@ rss_sources:
     priority: 1
     num_items: 8  # 该渠道默认采集条数
     
-  # VentureBeat AI
-  - name: "VentureBeat AI"
-    url: "https://venturebeat.com/category/ai/feed/"
+  # TechCrunch AI（可靠的技术新闻）
+  - name: "TechCrunch AI"
+    url: "https://techcrunch.com/category/artificial-intelligence/feed/"
+    language: "en"
+    category: "industry"
+    enabled: true
+    priority: 1
+    num_items: 8  # 该渠道默认采集条数
+    
+  # The Verge AI（知名科技媒体）
+  - name: "The Verge AI"
+    url: "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml"
     language: "en"
     category: "industry"
     enabled: true
     priority: 2
-    num_items: 8  # 该渠道默认采集条数
+    num_items: 6  # 该渠道默认采集条数
     
-  # Analytics India Magazine
-  - name: "Analytics India Magazine"
-    url: "https://analyticsindiamag.com/feed/"
+  # Ars Technica AI（深度技术分析）
+  - name: "Ars Technica AI"
+    url: "https://arstechnica.com/tag/artificial-intelligence/feed/"
     language: "en"
     category: "research"
     enabled: true
     priority: 2
     num_items: 6  # 该渠道默认采集条数
     
-  # AI News
-  - name: "Artificial Intelligence News"
-    url: "https://www.artificialintelligence-news.com/feed/"
-    language: "en"
+  # 机器之心 - 专业AI媒体（国内优质来源）
+  - name: "机器之心 AI新闻"
+    url: "https://www.jiqizhixin.com/rss"
+    language: "zh"
     category: "industry"
     enabled: true
     priority: 1
     num_items: 8  # 该渠道默认采集条数
+    
+  # AI Weekly Newsletter（专门AI新闻）
+  - name: "AI Weekly"
+    url: "https://aiweekly.co/rss.xml"
+    language: "en"
+    category: "industry"
+    enabled: true
+    priority: 2
+    num_items: 5  # 该渠道默认采集条数
+    
+  # Google AI Blog（官方AI博客）
+  - name: "Google AI Blog"
+    url: "https://ai.googleblog.com/feeds/posts/default"
+    language: "en"
+    category: "research"
+    enabled: true
+    priority: 1
+    num_items: 5  # 该渠道默认采集条数
 
 # X/Twitter数据源（通过Nitter或类似服务）
 x_sources:
@@ -154,9 +181,9 @@ fetch_config:
   timeout_seconds: 30
   user_agent: "AI-Daily-Brief/2.0 (+https://github.com/ai-daily-brief)"
   
-  # 缓存配置
-  cache_enabled: true
-  cache_ttl_minutes: 120  # 2小时缓存
+  # 缓存配置 - 已禁用，确保每次都取最新数据
+  cache_enabled: false
+  cache_ttl_minutes: 0  # 无缓存
   cache_dir: "./cache"
   
   # 重试配置

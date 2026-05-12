@@ -30,7 +30,12 @@ class DataSourceManager:
         
         self.config = self.load_config(config_path)
         
-        # 初始化缓存目录
+        # 强制禁用缓存，确保每次都取最新数据
+        if "fetch_config" not in self.config:
+            self.config["fetch_config"] = {}
+        self.config["fetch_config"]["cache_enabled"] = False
+        
+        # 初始化缓存目录（但禁用缓存）
         self.cache_dir = self.config.get("fetch_config", {}).get("cache_dir", "./cache")
         os.makedirs(self.cache_dir, exist_ok=True)
         
@@ -95,7 +100,7 @@ class DataSourceManager:
             print(f"⚠️ 缓存保存失败: {e}")
     
     def fetch_rss_source(self, source_config: Dict) -> List[Dict]:
-        """获取RSS源数据"""
+        """获取RSS源数据（增强版，带重试和容错机制）"""
         source_name = source_config.get("name", "未知源")
         source_url = source_config.get("url", "")
         language = source_config.get("language", "en")
@@ -105,99 +110,132 @@ class DataSourceManager:
             print(f"⚠️ 渠道 {source_name} URL为空，跳过")
             return []
         
-        # 检查缓存
-        cache_key = self.get_cache_key(source_name, source_url)
-        cached_data = self.get_cached_data(cache_key)
-        if cached_data:
-            print(f"📄 渠道 {source_name} 使用缓存数据")
-            return cached_data
-        
         print(f"🔍 渠道 {source_name} 开始采集...")
         
-        try:
-            # 使用feedparser解析RSS
-            feed = feedparser.parse(source_url)
-            
-            # 检查是否有错误
-            if hasattr(feed, 'bozo_exception') and feed.bozo_exception:
-                print(f"⚠️ 渠道 {source_name} RSS解析错误: {feed.bozo_exception}")
-                return []
-            
-            items = []
-            max_items = self.config.get("fetch_config", {}).get("max_items_per_source", 10)
-            
-            # 检查是否有条目
-            if not hasattr(feed, 'entries') or not feed.entries:
-                print(f"📭 渠道 {source_name} 没有可用的新闻条目")
-                return []
-            
-            for entry in feed.entries[:max_items]:
-                # 提取发布时间
-                published = None
-                if hasattr(entry, 'published_parsed') and entry.published_parsed:
-                    published = datetime(*entry.published_parsed[:6])
-                elif hasattr(entry, 'updated_parsed') and entry.updated_parsed:
-                    published = datetime(*entry.updated_parsed[:6])
+        max_retries = self.config.get("fetch_config", {}).get("max_retries", 3)
+        retry_delay = self.config.get("fetch_config", {}).get("retry_delay_seconds", 2)
+        
+        for attempt in range(max_retries):
+            try:
+                # 使用feedparser解析RSS，带超时设置
+                import socket
+                socket.setdefaulttimeout(30)
+                feed = feedparser.parse(source_url)
+                
+                # 检查是否有错误
+                bozo_error = False
+                if hasattr(feed, 'bozo_exception') and feed.bozo_exception:
+                    # 有些RSS源有轻微格式问题但仍然可用
+                    bozo_error = True
+                    if attempt < max_retries - 1:
+                        print(f"⚠️ 渠道 {source_name} RSS解析警告 (尝试 {attempt+1}/{max_retries}): {feed.bozo_exception}")
+                        time.sleep(retry_delay)
+                        continue
+                    else:
+                        print(f"⚠️ 渠道 {source_name} RSS解析错误，跳过: {feed.bozo_exception}")
+                        # 即使有错误，也尝试继续处理
+                
+                items = []
+                max_items = self.config.get("fetch_config", {}).get("max_items_per_source", 10)
+                
+                # 检查是否有条目
+                if not hasattr(feed, 'entries') or not feed.entries:
+                    if not bozo_error:  # 只有在没有解析错误时才报告无条目
+                        print(f"📭 渠道 {source_name} 没有可用的新闻条目")
+                    return []
+                
+                items_collected = 0
+                for entry in feed.entries:
+                    if items_collected >= max_items:
+                        break
+                    
+                    try:
+                        # 提取发布时间
+                        published = None
+                        if hasattr(entry, 'published_parsed') and entry.published_parsed:
+                            published = datetime(*entry.published_parsed[:6])
+                        elif hasattr(entry, 'updated_parsed') and entry.updated_parsed:
+                            published = datetime(*entry.updated_parsed[:6])
+                        elif hasattr(entry, 'date'):
+                            try:
+                                published = datetime.strptime(entry.date, "%Y-%m-%dT%H:%M:%SZ")
+                            except:
+                                published = datetime.now()
+                        else:
+                            published = datetime.now()
+                        
+                        # 检查时间范围
+                        max_age_hours = self.config.get("fetch_config", {}).get("max_age_hours", 72)
+                        if datetime.now() - published > timedelta(hours=max_age_hours):
+                            continue
+                        
+                        # 提取内容
+                        title = getattr(entry, 'title', '').strip()
+                        description = getattr(entry, 'description', '').strip()
+                        link = getattr(entry, 'link', '').strip()
+                        
+                        # 检查必要字段
+                        if not title:
+                            continue
+                        
+                        # 检查是否包含需要的关键词（如果配置了include_keywords）
+                        include_keywords = source_config.get("filters", {}).get("include_keywords", [])
+                        if include_keywords:
+                            content_text = (title + " " + description).lower()
+                            has_include_keyword = False
+                            for keyword in include_keywords:
+                                if keyword.lower() in content_text:
+                                    has_include_keyword = True
+                                    break
+                            if not has_include_keyword:
+                                continue  # 不包含所需关键词，跳过
+                        
+                        # 过滤广告内容
+                        if self.contains_excluded_keywords(title + " " + description):
+                            continue
+                        
+                        # 检查内容长度
+                        min_length = self.config.get("fetch_config", {}).get("min_content_length", 20)  # 进一步降低最小长度
+                        max_length = self.config.get("fetch_config", {}).get("max_content_length", 3000)  # 增加最大长度
+                        
+                        content = description or title
+                        if len(content) < min_length or len(content) > max_length:
+                            continue
+                        
+                        # 确定分类
+                        item_category = self.determine_category(title + " " + description, category)
+                        
+                        items.append({
+                            "title": title,
+                            "description": description[:800],  # 增加描述长度限制
+                            "link": link,
+                            "published": published.isoformat(),
+                            "source": source_name,
+                            "language": language,
+                            "category": item_category,
+                            "type": "rss"
+                        })
+                        items_collected += 1
+                        
+                    except Exception as e:
+                        # 单个条目处理失败，继续处理其他条目
+                        continue
+                
+                if items:
+                    print(f"✅ 渠道 {source_name} 采集到 {len(items)} 条数据")
                 else:
-                    published = datetime.now()
+                    print(f"📭 渠道 {source_name} 未采集到符合条件的数据")
                 
-                # 检查时间范围
-                max_age_hours = self.config.get("fetch_config", {}).get("max_age_hours", 48)
-                if datetime.now() - published > timedelta(hours=max_age_hours):
-                    continue
+                return items
                 
-                # 提取内容
-                title = getattr(entry, 'title', '')
-                description = getattr(entry, 'description', '')
-                link = getattr(entry, 'link', '')
-                
-                # 检查是否包含需要的关键词（如果配置了include_keywords）
-                include_keywords = source_config.get("filters", {}).get("include_keywords", [])
-                if include_keywords:
-                    content_text = (title + " " + description).lower()
-                    has_include_keyword = False
-                    for keyword in include_keywords:
-                        if keyword.lower() in content_text:
-                            has_include_keyword = True
-                            break
-                    if not has_include_keyword:
-                        continue  # 不包含所需关键词，跳过
-                
-                # 过滤广告内容
-                if self.contains_excluded_keywords(title + " " + description):
-                    continue
-                
-                # 检查内容长度
-                min_length = self.config.get("fetch_config", {}).get("min_content_length", 30)  # 降低最小长度
-                max_length = self.config.get("fetch_config", {}).get("max_content_length", 2000)  # 增加最大长度
-                
-                content = description or title
-                if len(content) < min_length or len(content) > max_length:
-                    continue
-                
-                # 确定分类
-                item_category = self.determine_category(title + " " + description, category)
-                
-                items.append({
-                    "title": title,
-                    "description": description[:500],  # 限制描述长度
-                    "link": link,
-                    "published": published.isoformat(),
-                    "source": source_name,
-                    "language": language,
-                    "category": item_category,
-                    "type": "rss"
-                })
-            
-            # 保存到缓存
-            if items:
-                self.save_to_cache(cache_key, items)
-            
-            return items
-            
-        except Exception as e:
-            print(f"❌ 渠道 {source_name} RSS采集失败: {e}")
-            return []
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    print(f"⚠️ 渠道 {source_name} 采集失败 (尝试 {attempt+1}/{max_retries}): {e}")
+                    time.sleep(retry_delay)
+                else:
+                    print(f"❌ 渠道 {source_name} 采集失败 (已重试 {max_retries} 次): {e}")
+        
+        return []
     
     def fetch_api_source(self, source_config: Dict) -> List[Dict]:
         """获取API源数据"""
