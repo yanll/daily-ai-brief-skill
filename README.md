@@ -30,20 +30,8 @@ pip install -r requirements.txt
 
 ### 基本使用
 ```bash
-# 生成今日AI简报（默认显示摘要）
+# 生成今日AI简报（自动显示摘要并保存报告）
 python daily_brief.py
-
-# 显示完整报告
-python daily_brief.py --report
-
-# 生成并保存简报文件
-python daily_brief.py --generate
-
-# 测试数据源功能
-python daily_brief.py --test-data
-
-# 使用自定义配置
-python daily_brief.py --config my_config.yaml
 ```
 
 ### Claude Code集成
@@ -57,7 +45,7 @@ brief = EnhancedAIBrief()
 result = brief.generate_daily_brief()
 
 # 获取摘要
-print(brief.get_summary())
+print(brief.get_summary(result))
 
 # 获取完整报告
 if result["success"]:
@@ -78,7 +66,7 @@ if result["success"]:
     print(f"💾 保存到: {result.get('filepath', '未知')}")
     
     # 显示摘要
-    print(brief.get_summary())
+    print(brief.get_summary(result))
 ```
 
 ## ⚙️ 配置说明
@@ -208,19 +196,22 @@ category_mapping:
 
 ## 📊 输出示例
 
-### 简报摘要
+### 程序运行输出
 ```
-📰 AI每日简报
-
-**状态**: ✅ 已生成
-**内容数量**: 8 条
-**数据来源**: 真实数据 + 生成内容
-**真实新闻**: 5 条
-**生成内容**: 3 条
-**保存位置**: ./reports/今日AI简报_2026-05-12.md
-**生成时间**: 2026-05-12 13:05:00
-
-使用 `--report` 查看完整内容
+🚀 AI每日简报生成器启动
+==================================================
+✅ 数据源管理器初始化成功
+📊 正在生成今日AI简报...
+✅ 成功获取 X 条真实新闻
+💾 简报已保存到: ./reports/今日AI简报_2026-05-12.md
+✅ AI每日简报生成成功！
+==================================================
+📈 简报统计:
+  总条目数: 5 条
+  真实新闻: 3 条
+  生成内容: 2 条
+  保存位置: ./reports/今日AI简报_2026-05-12.md
+🎉 AI每日简报生成完成！
 ```
 
 ### 完整报告示例
@@ -228,15 +219,15 @@ category_mapping:
 # 2026-05-12 AI每日简报
 
 ## 📊 简报摘要
-- **总条目数**: 8 条
-- **真实新闻**: 5 条
-- **生成内容**: 3 条
+- **总条目数**: 5 条
+- **真实新闻**: 3 条
+- **生成内容**: 2 条
 - **生成时间**: 2026-05-12 13:05:00
 
 ## 🏷️ 内容分类
-- **模型发布/更新**: 3 条
-- **产品发布/更新**: 2 条
-- **行业动态**: 2 条
+- **模型发布/更新**: 2 条
+- **产品发布/更新**: 1 条
+- **行业动态**: 1 条
 - **论文研究**: 1 条
 
 ## 📰 今日AI热点
@@ -313,10 +304,10 @@ daily-ai-brief-skill/
 ### 每日自动运行
 ```bash
 # 每天上午9点自动生成简报
-0 9 * * * cd /path/to/daily-ai-brief-skill && python daily_brief.py --generate
+0 9 * * * cd /path/to/daily-ai-brief-skill && python daily_brief.py
 
 # 每天下午6点更新简报
-0 18 * * * cd /path/to/daily-ai-brief-skill && python daily_brief.py --generate
+0 18 * * * cd /path/to/daily-ai-brief-skill && python daily_brief.py
 ```
 
 ### Claude Code定时任务
@@ -354,9 +345,6 @@ python test/demo_enhanced_features.py
 
 2. **数据源获取失败**
    ```bash
-   # 测试数据源连接
-   python daily_brief.py --test-data
-   
    # 检查网络连接
    curl https://www.ithome.com/rss/
    ```
@@ -373,10 +361,7 @@ python test/demo_enhanced_features.py
 
 ### 调试模式
 ```bash
-# 查看详细输出
-python daily_brief.py --generate --verbose
-
-# 测试数据源
+# 查看数据源状态
 python -c "from data_source_manager import DataSourceManager; m = DataSourceManager(); print(m.get_ai_news_summary(max_items=3))"
 ```
 

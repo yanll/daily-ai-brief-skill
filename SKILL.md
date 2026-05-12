@@ -23,25 +23,10 @@
 
 ## 使用方法
 
-### 命令行使用
+### 基本使用
 ```bash
-# 生成简报并显示摘要
+# 生成AI每日简报（自动显示摘要并保存报告）
 python daily_brief.py
-
-# 显示摘要
-python daily_brief.py --summary
-
-# 显示完整报告
-python daily_brief.py --report
-
-# 生成简报文件
-python daily_brief.py --generate
-
-# 使用自定义配置
-python daily_brief.py --config my_config.yaml
-
-# 测试数据源功能
-python daily_brief.py --test-data
 ```
 
 ### Python API
@@ -55,7 +40,7 @@ brief = EnhancedAIBrief()
 result = brief.generate_daily_brief()
 
 # 获取摘要
-print(brief.get_summary())
+print(brief.get_summary(result))
 
 # 获取完整报告
 if result["success"]:
@@ -79,7 +64,7 @@ if result["success"]:
     print(f"  保存位置: {result.get('filepath', '未知')}")
     
     # 显示简报摘要
-    print(brief.get_summary())
+    print(brief.get_summary(result))
 ```
 
 ### OpenClaw集成示例
@@ -96,16 +81,23 @@ def generate_ai_daily_brief():
     if result["success"]:
         return {
             "status": "success",
+            "timestamp": datetime.now().isoformat(),
             "data": {
-                "summary": brief.get_summary(),
-                "report": brief.get_formatted_report(result),
-                "metadata": result
+                "summary": "📰 AI每日简报生成成功",
+                "total_items": result.get('total_items', 0),
+                "real_items": result.get('real_items', 0),
+                "generated_items": result.get('generated_items', 0),
+                "categories": result.get("categories", {}),
+                "filepath": result.get('filepath', '未知'),
+                "report_preview": brief.get_summary(result)[:200] + "..." if len(brief.get_summary(result)) > 200 else brief.get_summary(result)
             }
         }
     else:
         return {
             "status": "error",
-            "message": result.get("error", "未知错误")
+            "timestamp": datetime.now().isoformat(),
+            "message": result.get("error", "未知错误"),
+            "details": str(result)
         }
 
 # 调用函数
@@ -239,10 +231,10 @@ result = brief.generate_daily_brief()
 ### Claude Code定时任务
 ```bash
 # 每天上午9点自动生成简报
-0 9 * * * cd /path/to/daily-ai-brief-skill && python daily_brief.py --generate
+0 9 * * * cd /path/to/daily-ai-brief-skill && python daily_brief.py
 
 # 每天下午6点更新简报
-0 18 * * * cd /path/to/daily-ai-brief-skill && python daily_brief.py --generate
+0 18 * * * cd /path/to/daily-ai-brief-skill && python daily_brief.py
 ```
 
 ### OpenClaw定时任务
@@ -255,7 +247,7 @@ result = brief.generate_daily_brief()
 # 运行完整测试套件
 python test/run_all_tests.py
 
-# 测试数据源功能
+# 运行单元测试
 python test/test_data_sources.py
 
 # 运行功能演示
@@ -280,8 +272,8 @@ python test/demo_enhanced_features.py
 
 2. **数据源获取失败**
    ```bash
-   # 测试数据源连接
-   python daily_brief.py --test-data
+   # 检查网络连接
+   curl https://www.ithome.com/rss/
    ```
 
 3. **配置文件错误**
@@ -291,10 +283,7 @@ python test/demo_enhanced_features.py
 
 ### 调试模式
 ```bash
-# 查看详细输出
-python daily_brief.py --generate --verbose
-
-# 测试数据源
+# 查看数据源状态
 python -c "from data_source_manager import DataSourceManager; m = DataSourceManager(); print(m.get_ai_news_summary(max_items=3))"
 ```
 

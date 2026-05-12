@@ -1,13 +1,8 @@
-# AI每日简报技能依赖（真实数据源版）
-# 基础依赖
-PyYAML>=6.0
 
-# 数据源依赖
+pyymal>=6.0.3
 feedparser>=6.0.10
 requests>=2.31.0
 beautifulsoup4>=4.12.0
 lxml>=4.9.0
-
-# 可选：API数据源
-# openai>=1.0.0  # 如果需要使用OpenAI API
-# anthropic>=0.25.0  # 如果需要使用Claude API
+feedparser>=6.0.12
+requests>=2.33.1
