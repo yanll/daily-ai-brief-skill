@@ -58,9 +58,8 @@ result = brief.generate_daily_brief()
 if result["success"]:
     print("🎯 AI每日简报生成成功！")
     print(f"📊 统计信息:")
-    print(f"  总条目: {result.get('total_items', 0)}")
-    print(f"  真实新闻: {result.get('real_items', 0)}")
-    print(f"  生成内容: {result.get('generated_items', 0)}")
+    print(f"  总条目数: {result.get('total_items', 0)} 条")
+    print(f"  新闻来源: {result.get('real_items', 0)} 条")
     print(f"  保存位置: {result.get('filepath', '未知')}")
     
     # 显示简报摘要
@@ -193,7 +192,7 @@ result = brief.generate_daily_brief()
   新闻来源: 8 条
   保存位置: ./reports/今日AI简报_2026-05-12.md
 
-📰 今日AI热点:
+📰 今日热点新闻:
 1. 🤖 OpenAI发布GPT-4.5新版本
 2. 🔬 Google AI在医疗影像诊断取得突破
 3. 🛠️ Anthropic开源金融AI全栈模板
