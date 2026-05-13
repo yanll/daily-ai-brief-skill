@@ -57,7 +57,7 @@ async def main():
 
         # 2. 创建协调器
         logger.info("步骤2: 初始化协调器")
-        orchestrator = Orchestrator(max_concurrent=10)
+        orchestrator = Orchestrator(max_concurrent=25)
 
         # 3. 执行抓取
         logger.info("步骤3: 开始抓取数据")

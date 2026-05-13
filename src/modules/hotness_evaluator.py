@@ -450,7 +450,7 @@ class HotnessEvaluator:
         report_lines.append(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         report_lines.append(f"总条目数: {len(items)}")
         if top_n is None:
-            report_lines.append("显示所有新闻条目")
+            report_lines.append("")
         else:
             report_lines.append(f"显示前 {display_count} 个热点")
         report_lines.append("")
@@ -476,7 +476,6 @@ class HotnessEvaluator:
                 report_lines.append(f"**热度**: {item.hotness_score:.1f}/10")
                 report_lines.append(f"**来源**: {item.source} ({item.source_type})")
                 report_lines.append(f"**发布时间**: {item.publish_date.strftime('%Y-%m-%d %H:%M') if item.publish_date else '未知'}")
-                report_lines.append(f"**语言**: {item.language}")
                 report_lines.append(f"**链接**: [阅读原文]({item.url})")
                 if item.summary:
                     report_lines.append(f"**摘要**: {item.summary[:300]}...")
