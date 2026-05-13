@@ -2,6 +2,7 @@
 """
 AI新闻数据源管理器
 负责从RSS、API和网页爬虫获取AI新闻数据
+支持并行采集，大幅提升采集速度
 """
 
 import os
@@ -13,30 +14,50 @@ import hashlib
 import feedparser
 import requests
 from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Tuple
 import random
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urlparse
 
-class DataSourceManager:
-    """数据源管理器"""
+_thread_local = threading.local()
 
-    def __init__(self, config_path: Optional[str] = None):
-        """初始化数据源管理器"""
+def _get_thread_session() -> requests.Session:
+    """获取线程安全的 requests.Session（每线程一个实例）"""
+    if not hasattr(_thread_local, "session"):
+        session = requests.Session()
+        session.headers.update({
+            "User-Agent": "AI-Daily-Brief/2.0 (+https://github.com/ai-daily-brief)",
+            "Accept": "application/rss+xml, application/xml, text/xml, application/json, text/html",
+            "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7"
+        })
+        _thread_local.session = session
+    return _thread_local.session
+
+class DataSourceManager:
+    """数据源管理器（并行采集版）"""
+
+    def __init__(self, config_path: Optional[str] = None, max_workers: int = 20):
+        """初始化数据源管理器
+
+        Args:
+            config_path: 配置文件路径
+            max_workers: 并行采集最大线程数（默认20，I/O密集型任务建议较高值）
+        """
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
 
         if config_path is None:
             config_path = os.path.join(self.base_dir, "data_sources.yaml")
 
         self.config = self.load_config(config_path)
+        self.max_workers = max_workers
 
-        self.session = requests.Session()
-        user_agent = self.config.get("fetch_config", {}).get("user_agent",
-                                                           "AI-Daily-Brief/1.0")
-        self.session.headers.update({
-            "User-Agent": user_agent,
-            "Accept": "application/rss+xml, application/xml, text/xml, application/json, text/html",
-            "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7"
-        })
+        self._print_lock = threading.Lock()
+
+    def _log(self, msg: str):
+        """线程安全的日志输出"""
+        with self._print_lock:
+            print(msg)
 
     def load_config(self, config_path: str) -> Dict[str, Any]:
         """加载数据源配置文件"""
@@ -53,42 +74,48 @@ class DataSourceManager:
         return hashlib.md5(cache_key.encode()).hexdigest()
 
     def fetch_rss_source(self, source_config: Dict) -> List[Dict]:
-        """获取RSS源数据（增强版，带重试和容错机制）"""
+        """获取RSS源数据（线程安全版）"""
         source_name = source_config.get("name", "未知源")
         source_url = source_config.get("url", "")
         language = source_config.get("language", "en")
 
         if not source_url:
-            print(f"⚠️ 渠道 {source_name} URL为空，跳过")
+            self._log(f"⚠️ 渠道 {source_name} URL为空，跳过")
             return []
 
-        print(f"🔍 渠道 {source_name} 开始采集...")
+        self._log(f"🔍 渠道 {source_name} 开始采集...")
 
         max_retries = self.config.get("fetch_config", {}).get("max_retries", 3)
         retry_delay = self.config.get("fetch_config", {}).get("retry_delay_seconds", 2)
+        timeout = self.config.get("fetch_config", {}).get("timeout_seconds", 30)
 
         for attempt in range(max_retries):
             try:
-                import socket
-                socket.setdefaulttimeout(30)
-                feed = feedparser.parse(source_url)
+                session = _get_thread_session()
+
+                try:
+                    resp = session.get(source_url, timeout=timeout,
+                                       headers={"Accept": "application/rss+xml, application/xml, text/xml, application/atom+xml"})
+                    feed = feedparser.parse(resp.content)
+                except Exception:
+                    feed = feedparser.parse(source_url)
 
                 bozo_error = False
                 if hasattr(feed, 'bozo_exception') and feed.bozo_exception:
                     bozo_error = True
                     if attempt < max_retries - 1:
-                        print(f"⚠️ 渠道 {source_name} RSS解析警告 (尝试 {attempt+1}/{max_retries}): {feed.bozo_exception}")
+                        self._log(f"⚠️ 渠道 {source_name} RSS解析警告 (尝试 {attempt+1}/{max_retries}): {feed.bozo_exception}")
                         time.sleep(retry_delay)
                         continue
                     else:
-                        print(f"⚠️ 渠道 {source_name} RSS解析错误，跳过: {feed.bozo_exception}")
+                        self._log(f"⚠️ 渠道 {source_name} RSS解析错误，跳过: {feed.bozo_exception}")
 
                 items = []
                 max_items = self.config.get("fetch_config", {}).get("max_items_per_source", 10)
 
                 if not hasattr(feed, 'entries') or not feed.entries:
                     if not bozo_error:
-                        print(f"📭 渠道 {source_name} 没有可用的新闻条目")
+                        self._log(f"📭 渠道 {source_name} 没有可用的新闻条目")
                     return []
 
                 items_collected = 0
@@ -153,22 +180,22 @@ class DataSourceManager:
                         })
                         items_collected += 1
 
-                    except Exception as e:
+                    except Exception:
                         continue
 
                 if items:
-                    print(f"✅ 渠道 {source_name} 采集到 {len(items)} 条数据")
+                    self._log(f"✅ 渠道 {source_name} 采集到 {len(items)} 条数据")
                 else:
-                    print(f"📭 渠道 {source_name} 未采集到符合条件的数据")
+                    self._log(f"📭 渠道 {source_name} 未采集到符合条件的数据")
 
                 return items
 
             except Exception as e:
                 if attempt < max_retries - 1:
-                    print(f"⚠️ 渠道 {source_name} 采集失败 (尝试 {attempt+1}/{max_retries}): {e}")
+                    self._log(f"⚠️ 渠道 {source_name} 采集失败 (尝试 {attempt+1}/{max_retries}): {e}")
                     time.sleep(retry_delay)
                 else:
-                    print(f"❌ 渠道 {source_name} 采集失败 (已重试 {max_retries} 次): {e}")
+                    self._log(f"❌ 渠道 {source_name} 采集失败 (已重试 {max_retries} 次): {e}")
 
         return []
 
@@ -179,10 +206,10 @@ class DataSourceManager:
         endpoint = source_config.get("endpoint", "")
 
         if not endpoint:
-            print(f"⚠️ 渠道 {source_name} endpoint为空，跳过")
+            self._log(f"⚠️ 渠道 {source_name} endpoint为空，跳过")
             return []
 
-        print(f"🔍 渠道 {source_name} 开始采集...")
+        self._log(f"🔍 渠道 {source_name} 开始采集...")
 
         try:
             if source_type == "google_news":
@@ -197,7 +224,7 @@ class DataSourceManager:
                 return self.fetch_generic_api(source_config)
 
         except Exception as e:
-            print(f"❌ 渠道 {source_name} API采集失败: {e}")
+            self._log(f"❌ 渠道 {source_name} API采集失败: {e}")
             return []
 
     def fetch_google_news(self, source_config: Dict) -> List[Dict]:
@@ -217,11 +244,11 @@ class DataSourceManager:
 
     def fetch_newsapi(self, source_config: Dict) -> List[Dict]:
         """获取NewsAPI数据（需要API密钥）"""
-        print(f"⚠️ NewsAPI需要API密钥，跳过 {source_config.get('name')}")
+        self._log(f"⚠️ NewsAPI需要API密钥，跳过 {source_config.get('name')}")
         return []
 
     def fetch_hackernews(self, source_config: Dict) -> List[Dict]:
-        """获取Hacker News数据"""
+        """获取Hacker News数据（内部子请求并行）"""
         source_name = source_config.get("name", "HackerNews")
         endpoint = source_config.get("endpoint", "https://hacker-news.firebaseio.com/v0/topstories.json")
         max_items = source_config.get("num_items",
@@ -229,40 +256,40 @@ class DataSourceManager:
         timeout = self.config.get("fetch_config", {}).get("timeout_seconds", 30)
 
         try:
-            response = self.session.get(endpoint, timeout=timeout)
+            session = _get_thread_session()
+            response = session.get(endpoint, timeout=timeout)
             response.raise_for_status()
             story_ids = response.json()
 
-            items = []
-            for story_id in story_ids[:max_items]:
+            def fetch_hn_story(story_id: str) -> Optional[Dict]:
                 try:
                     story_url = f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json"
-                    story_resp = self.session.get(story_url, timeout=timeout)
+                    story_resp = session.get(story_url, timeout=timeout)
                     story_resp.raise_for_status()
                     story = story_resp.json()
 
                     if not story or story.get("type") != "story":
-                        continue
+                        return None
 
                     title = story.get("title", "").strip()
                     if not title:
-                        continue
+                        return None
 
                     score = story.get("score", 0)
                     if score < 5:
-                        continue
+                        return None
 
                     if self.contains_excluded_keywords(title):
-                        continue
+                        return None
 
                     published = datetime.fromtimestamp(story.get("time", 0))
                     max_age_hours = self.config.get("fetch_config", {}).get("max_age_hours", 72)
                     if datetime.now() - published > timedelta(hours=max_age_hours):
-                        continue
+                        return None
 
                     link = story.get("url", f"https://news.ycombinator.com/item?id={story_id}")
 
-                    items.append({
+                    return {
                         "title": title,
                         "description": f"Score: {score} | Comments: {story.get('descendants', 0)}",
                         "link": link,
@@ -270,22 +297,28 @@ class DataSourceManager:
                         "source": source_name,
                         "language": "en",
                         "type": "api"
-                    })
-
-                    time.sleep(0.1)
-
+                    }
                 except Exception:
-                    continue
+                    return None
+
+            items = []
+            with ThreadPoolExecutor(max_workers=min(8, max_items)) as inner_pool:
+                futures = {inner_pool.submit(fetch_hn_story, sid): sid for sid in story_ids[:max_items]}
+                for future in as_completed(futures):
+                    result = future.result()
+                    if result:
+                        items.append(result)
 
             if items:
-                print(f"✅ 渠道 {source_name} 采集到 {len(items)} 条数据")
+                items.sort(key=lambda x: x.get("published", ""), reverse=True)
+                self._log(f"✅ 渠道 {source_name} 采集到 {len(items)} 条数据")
             else:
-                print(f"📭 渠道 {source_name} 未采集到符合条件的数据")
+                self._log(f"📭 渠道 {source_name} 未采集到符合条件的数据")
 
             return items
 
         except Exception as e:
-            print(f"❌ 渠道 {source_name} HackerNews采集失败: {e}")
+            self._log(f"❌ 渠道 {source_name} HackerNews采集失败: {e}")
             return []
 
     def fetch_github_api(self, source_config: Dict) -> List[Dict]:
@@ -297,11 +330,12 @@ class DataSourceManager:
         timeout = self.config.get("fetch_config", {}).get("timeout_seconds", 30)
 
         if not endpoint:
-            print(f"⚠️ 渠道 {source_name} endpoint为空，跳过")
+            self._log(f"⚠️ 渠道 {source_name} endpoint为空，跳过")
             return []
 
         try:
-            response = self.session.get(endpoint, params=params, timeout=timeout)
+            session = _get_thread_session()
+            response = session.get(endpoint, params=params, timeout=timeout)
             response.raise_for_status()
             data = response.json()
 
@@ -358,27 +392,29 @@ class DataSourceManager:
                         continue
 
             if items:
-                print(f"✅ 渠道 {source_name} 采集到 {len(items)} 条数据")
+                self._log(f"✅ 渠道 {source_name} 采集到 {len(items)} 条数据")
             else:
-                print(f"📭 渠道 {source_name} 未采集到符合条件的数据")
+                self._log(f"📭 渠道 {source_name} 未采集到符合条件的数据")
 
             return items
 
         except Exception as e:
-            print(f"❌ 渠道 {source_name} GitHub API采集失败: {e}")
+            self._log(f"❌ 渠道 {source_name} GitHub API采集失败: {e}")
             return []
 
     def fetch_generic_api(self, source_config: Dict) -> List[Dict]:
         """获取通用API数据"""
         endpoint = source_config.get("endpoint", "")
         params = source_config.get("params", {})
+        source_name = source_config.get("name", "未知源")
 
         max_retries = self.config.get("fetch_config", {}).get("max_retries", 3)
         timeout = self.config.get("fetch_config", {}).get("timeout_seconds", 30)
 
         for attempt in range(max_retries):
             try:
-                response = self.session.get(endpoint, params=params, timeout=timeout)
+                session = _get_thread_session()
+                response = session.get(endpoint, params=params, timeout=timeout)
                 response.raise_for_status()
 
                 data = response.json()
@@ -408,7 +444,7 @@ class DataSourceManager:
                         })
 
                 if items:
-                    print(f"✅ 渠道 {source_config.get('name', '未知')} 采集到 {len(items)} 条数据")
+                    self._log(f"✅ 渠道 {source_name} 采集到 {len(items)} 条数据")
 
                 return items
 
@@ -422,16 +458,16 @@ class DataSourceManager:
         return []
 
     def fetch_web_scraper_source(self, source_config: Dict) -> List[Dict]:
-        """网页爬虫数据源 - 尝试RSS方式获取，失败则跳过"""
+        """网页爬虫数据源 - 尝试RSS方式获取，失败则尝试JSON"""
         source_name = source_config.get("name", "未知源")
         source_url = source_config.get("url", "")
         language = source_config.get("language", "en")
 
         if not source_url:
-            print(f"⚠️ 渠道 {source_name} URL为空，跳过")
+            self._log(f"⚠️ 渠道 {source_name} URL为空，跳过")
             return []
 
-        print(f"🔍 渠道 {source_name} (网页爬虫) 开始采集...")
+        self._log(f"🔍 渠道 {source_name} (网页爬虫) 开始采集...")
 
         rss_url = source_url
         if not rss_url.endswith(("/feed", "/feed/", "/rss", "/rss.xml", "/atom.xml")):
@@ -455,7 +491,8 @@ class DataSourceManager:
         if not items:
             try:
                 timeout = self.config.get("fetch_config", {}).get("timeout_seconds", 30)
-                response = self.session.get(source_url, timeout=timeout)
+                session = _get_thread_session()
+                response = session.get(source_url, timeout=timeout)
                 response.raise_for_status()
 
                 content_type = response.headers.get("Content-Type", "")
@@ -490,12 +527,12 @@ class DataSourceManager:
                         pass
 
                 if items:
-                    print(f"✅ 渠道 {source_name} 网页采集到 {len(items)} 条数据")
+                    self._log(f"✅ 渠道 {source_name} 网页采集到 {len(items)} 条数据")
                 else:
-                    print(f"📭 渠道 {source_name} 网页采集未获取到数据")
+                    self._log(f"📭 渠道 {source_name} 网页采集未获取到数据")
 
             except Exception as e:
-                print(f"⚠️ 渠道 {source_name} 网页爬虫采集失败: {e}")
+                self._log(f"⚠️ 渠道 {source_name} 网页爬虫采集失败: {e}")
 
         return items
 
@@ -513,10 +550,10 @@ class DataSourceManager:
             all_usernames.extend(usernames)
 
         if not all_usernames:
-            print(f"⚠️ 渠道 {source_name} 无用户名，跳过")
+            self._log(f"⚠️ 渠道 {source_name} 无用户名，跳过")
             return []
 
-        print(f"🔍 渠道 {source_name} (X/Twitter) 开始采集...")
+        self._log(f"🔍 渠道 {source_name} (X/Twitter) 开始采集...")
 
         nitter_instances = [
             "https://nitter.net",
@@ -541,12 +578,11 @@ class DataSourceManager:
                         break
                 except Exception:
                     continue
-                time.sleep(0.5)
 
         if items:
-            print(f"✅ 渠道 {source_name} 采集到 {len(items)} 条数据")
+            self._log(f"✅ 渠道 {source_name} 采集到 {len(items)} 条数据")
         else:
-            print(f"📭 渠道 {source_name} X/Twitter源未采集到数据")
+            self._log(f"📭 渠道 {source_name} X/Twitter源未采集到数据")
 
         return items
 
@@ -561,106 +597,89 @@ class DataSourceManager:
 
         return False
 
+    def _fetch_single_source(self, source_config: Dict, source_type: str) -> Tuple[str, List[Dict], bool]:
+        """单个数据源采集的统一入口（供线程池调用）
+
+        Returns:
+            (source_name, items, success)
+        """
+        source_name = source_config.get("name", "未知源")
+        try:
+            if source_type == "rss":
+                items = self.fetch_rss_source(source_config)
+            elif source_type == "api":
+                items = self.fetch_api_source(source_config)
+            elif source_type == "web":
+                items = self.fetch_web_scraper_source(source_config)
+            elif source_type == "x":
+                items = self.fetch_x_source(source_config)
+            else:
+                items = []
+            return (source_name, items, bool(items))
+        except Exception as e:
+            self._log(f"❌ 渠道 {source_name} 采集异常: {e}")
+            return (source_name, [], False)
+
     def fetch_all_sources(self) -> List[Dict]:
-        """从所有启用的数据源获取数据（增强版，带进度报告和容错）"""
+        """从所有启用的数据源并行获取数据"""
         all_items = []
         successful_sources = 0
         total_sources = 0
 
-        print("📡 开始从所有数据源采集数据...")
+        start_time = time.time()
+        self._log("📡 开始并行采集所有数据源...")
 
-        # 获取RSS源数据
+        all_tasks = []
+
         rss_sources = self.config.get("rss_sources", [])
-        enabled_rss_sources = [s for s in rss_sources if s.get("enabled", False)]
-        total_sources += len(enabled_rss_sources)
+        for s in rss_sources:
+            if s.get("enabled", False):
+                all_tasks.append((s, "rss"))
 
-        for i, source in enumerate(enabled_rss_sources, 1):
-            source_name = source.get('name', f'RSS源{i}')
-            print(f"\n[{i}/{len(enabled_rss_sources)}] 🔍 采集 {source_name}...")
-
-            try:
-                items = self.fetch_rss_source(source)
-                if items:
-                    all_items.extend(items)
-                    successful_sources += 1
-                    print(f"   ✅ 采集到 {len(items)} 条数据")
-                else:
-                    print(f"   📭 未采集到数据")
-            except Exception as e:
-                print(f"   ❌ 采集失败: {e}")
-
-            time.sleep(0.5 + random.random() * 0.5)
-
-        # 获取API源数据
         api_sources = self.config.get("api_sources", [])
-        enabled_api_sources = [s for s in api_sources if s.get("enabled", False)]
-        total_sources += len(enabled_api_sources)
+        for s in api_sources:
+            if s.get("enabled", False):
+                all_tasks.append((s, "api"))
 
-        for i, source in enumerate(enabled_api_sources, 1):
-            source_name = source.get('name', f'API源{i}')
-            print(f"\n[{i}/{len(enabled_api_sources)}] 🔍 采集 {source_name}...")
-
-            try:
-                items = self.fetch_api_source(source)
-                if items:
-                    all_items.extend(items)
-                    successful_sources += 1
-                    print(f"   ✅ 采集到 {len(items)} 条数据")
-                else:
-                    print(f"   📭 未采集到数据")
-            except Exception as e:
-                print(f"   ❌ 采集失败: {e}")
-
-            time.sleep(1 + random.random())
-
-        # 获取网页爬虫数据
         web_scrapers = self.config.get("web_scrapers", [])
-        enabled_web_scrapers = [s for s in web_scrapers if s.get("enabled", False)]
-        total_sources += len(enabled_web_scrapers)
+        for s in web_scrapers:
+            if s.get("enabled", False):
+                all_tasks.append((s, "web"))
 
-        for i, source in enumerate(enabled_web_scrapers, 1):
-            source_name = source.get('name', f'网页源{i}')
-            print(f"\n[{i}/{len(enabled_web_scrapers)}] 🔍 采集 {source_name}...")
-
-            try:
-                items = self.fetch_web_scraper_source(source)
-                if items:
-                    all_items.extend(items)
-                    successful_sources += 1
-                    print(f"   ✅ 采集到 {len(items)} 条数据")
-                else:
-                    print(f"   📭 未采集到数据")
-            except Exception as e:
-                print(f"   ❌ 采集失败: {e}")
-
-            time.sleep(0.5 + random.random() * 0.5)
-
-        # 获取X/Twitter数据
         x_sources = self.config.get("x_sources", [])
-        enabled_x_sources = [s for s in x_sources if s.get("enabled", False)]
-        total_sources += len(enabled_x_sources)
+        for s in x_sources:
+            if s.get("enabled", False):
+                all_tasks.append((s, "x"))
 
-        for i, source in enumerate(enabled_x_sources, 1):
-            source_name = source.get('name', f'X源{i}')
-            print(f"\n[{i}/{len(enabled_x_sources)}] 🔍 采集 {source_name}...")
+        total_sources = len(all_tasks)
+        completed = 0
 
-            try:
-                items = self.fetch_x_source(source)
-                if items:
-                    all_items.extend(items)
-                    successful_sources += 1
-                    print(f"   ✅ 采集到 {len(items)} 条数据")
-                else:
-                    print(f"   📭 未采集到数据")
-            except Exception as e:
-                print(f"   ❌ 采集失败: {e}")
+        workers = min(self.max_workers, total_sources)
+        self._log(f"🚀 共 {total_sources} 个数据源，使用 {workers} 个并行线程采集")
 
-            time.sleep(0.5 + random.random() * 0.5)
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            future_to_source = {}
+            for source_config, source_type in all_tasks:
+                source_name = source_config.get("name", "未知源")
+                future = pool.submit(self._fetch_single_source, source_config, source_type)
+                future_to_source[future] = source_name
 
-        # 按发布时间排序（最新的在前）
+            for future in as_completed(future_to_source):
+                source_name = future_to_source[future]
+                completed += 1
+                try:
+                    name, items, success = future.result()
+                    if success:
+                        all_items.extend(items)
+                        successful_sources += 1
+                        self._log(f"[{completed}/{total_sources}] ✅ {name}: {len(items)} 条")
+                    else:
+                        self._log(f"[{completed}/{total_sources}] 📭 {name}: 无数据")
+                except Exception as e:
+                    self._log(f"[{completed}/{total_sources}] ❌ {source_name}: {e}")
+
         all_items.sort(key=lambda x: x.get("published", ""), reverse=True)
 
-        # 去重（基于标题和链接的组合）
         seen_keys = set()
         unique_items = []
 
@@ -677,17 +696,20 @@ class DataSourceManager:
                     seen_keys.add(key)
                     unique_items.append(item)
 
-        print(f"\n📊 采集结果汇总:")
-        print(f"   📡 数据源: {successful_sources}/{total_sources} 个成功")
-        print(f"   📄 原始数据: {len(all_items)} 条")
-        print(f"   🎯 唯一数据: {len(unique_items)} 条")
+        elapsed = time.time() - start_time
+
+        self._log(f"\n📊 采集结果汇总:")
+        self._log(f"   📡 数据源: {successful_sources}/{total_sources} 个成功")
+        self._log(f"   📄 原始数据: {len(all_items)} 条")
+        self._log(f"   🎯 唯一数据: {len(unique_items)} 条")
+        self._log(f"   ⏱️ 总耗时: {elapsed:.1f} 秒 ({workers}线程并行)")
 
         if unique_items:
-            print(f"\n📰 示例数据 (前3条):")
+            self._log(f"\n📰 示例数据 (前3条):")
             for i, item in enumerate(unique_items[:3], 1):
                 title = item.get("title", "无标题")
                 source = item.get("source", "未知来源")
-                print(f"   {i}. [{source}] {title[:60]}...")
+                self._log(f"   {i}. [{source}] {title[:60]}...")
 
         return unique_items
 
@@ -696,7 +718,7 @@ class DataSourceManager:
         all_items = self.fetch_all_sources()
 
         if not all_items:
-            print("📭 所有渠道均未采集到数据")
+            self._log("📭 所有渠道均未采集到数据")
             return {
                 "success": True,
                 "items": [],
@@ -724,7 +746,7 @@ class DataSourceManager:
 
 def test_data_sources():
     """测试数据源功能"""
-    print("🧪 测试数据源管理器...")
+    print("🧪 测试数据源管理器（并行版）...")
 
     manager = DataSourceManager()
 

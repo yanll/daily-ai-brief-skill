@@ -487,11 +487,11 @@ api_sources:
 # 数据获取配置
 fetch_config:
   max_items_per_source: 15
-  timeout_seconds: 30
+  timeout_seconds: 15
   user_agent: "AI-Daily-Brief/2.0 (+https://github.com/ai-daily-brief)"
 
-  max_retries: 2
-  retry_delay_seconds: 2
+  max_retries: 1
+  retry_delay_seconds: 1
 
   min_content_length: 20
   max_content_length: 800
