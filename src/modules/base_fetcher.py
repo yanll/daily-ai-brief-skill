@@ -199,7 +199,7 @@ class BaseFetcher(abc.ABC):
 
     def cleanup_content(self, content: str) -> str:
         """
-        清理内容文本
+        清理内容文本，移除HTML标签和多余格式
 
         Args:
             content: 原始内容
@@ -214,10 +214,40 @@ class BaseFetcher(abc.ABC):
         if not isinstance(content, str):
             content = str(content)
 
-        # 移除多余空白字符
+        # 移除HTML标签（包括<script>、<style>等）
+        # 先移除script和style标签及其内容
+        content = re.sub(r'<(script|style)[^>]*>.*?</\1>', '', content, flags=re.DOTALL | re.IGNORECASE)
+
+        # 移除其他HTML标签，但保留文本内容
+        content = re.sub(r'<[^>]+>', ' ', content)
+
+        # 解码HTML实体
+        try:
+            import html
+            content = html.unescape(content)
+        except ImportError:
+            # 如果html模块不可用，使用简单的替换
+            content = re.sub(r'&nbsp;', ' ', content)
+            content = re.sub(r'&amp;', '&', content)
+            content = re.sub(r'&lt;', '<', content)
+            content = re.sub(r'&gt;', '>', content)
+            content = re.sub(r'&quot;', '"', content)
+            content = re.sub(r'&#39;', "'", content)
+            content = re.sub(r'&[a-z]+;', ' ', content)
+        except Exception:
+            # 如果html.unescape失败，也使用简单替换
+            content = re.sub(r'&nbsp;', ' ', content)
+            content = re.sub(r'&amp;', '&', content)
+            content = re.sub(r'&lt;', '<', content)
+            content = re.sub(r'&gt;', '>', content)
+            content = re.sub(r'&quot;', '"', content)
+            content = re.sub(r'&#39;', "'", content)
+            content = re.sub(r'&[a-z]+;', ' ', content)
+
+        # 移除多余空白字符（包括换行、制表符等）
         content = re.sub(r'\s+', ' ', content)
 
-        # 移除常见HTML实体
-        content = re.sub(r'&[a-z]+;', ' ', content)
+        # 清理多余的空格
+        content = re.sub(r' +', ' ', content)
 
         return content.strip()

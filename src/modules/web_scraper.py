@@ -182,6 +182,7 @@ class WebScraper(BaseFetcher):
         # 提取标题
         title_elem = element.find(['h1', 'h2', 'h3', 'h4', 'h5'])
         title = title_elem.get_text(strip=True) if title_elem else "无标题"
+        title = self.cleanup_content(title)
 
         # 提取链接
         link_elem = element.find('a', href=True)
@@ -215,7 +216,7 @@ class WebScraper(BaseFetcher):
             title=title,
             url=url or self.url,  # 如果没有具体文章链接，使用页面URL
             content=content,
-            summary=content[:200],
+            summary=self.cleanup_content(content[:200]),
             source=self.name,
             source_type="web",
             language=self.language,
@@ -243,6 +244,7 @@ class WebScraper(BaseFetcher):
         title_elem = await element.query_selector('h1, h2, h3, h4, h5')
         title = await title_elem.inner_text() if title_elem else "无标题"
         title = title.strip()
+        title = self.cleanup_content(title)
 
         # 提取链接
         link_elem = await element.query_selector('a[href]')
@@ -283,7 +285,7 @@ class WebScraper(BaseFetcher):
             title=title,
             url=url or self.url,
             content=content,
-            summary=content[:200],
+            summary=self.cleanup_content(content[:200]),
             source=self.name,
             source_type="web",
             language=self.language,

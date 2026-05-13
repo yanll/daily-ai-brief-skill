@@ -108,6 +108,49 @@ class ReportGenerator:
         self.logger.info(f"JSON报告已保存: {filepath}")
         return filepath
 
+    def _get_channel(self, item: NewsItem) -> str:
+        """
+        根据新闻条目属性确定频道分组
+
+        Args:
+            item: 新闻条目
+
+        Returns:
+            频道名称
+        """
+        source_type = item.source_type.lower()
+        source = item.source.lower()
+        language = item.language.lower()
+
+        # 根据source_type和language判断频道
+        if source_type == "rss":
+            if language == "zh":
+                return "国内媒体"
+            elif language == "en":
+                # 进一步根据来源判断
+                if "arxiv" in source:
+                    return "学术研究"
+                elif any(kw in source for kw in ["openai", "anthropic", "google", "deepmind", "meta", "microsoft", "huggingface"]):
+                    return "官方博客"
+                elif any(kw in source for kw in ["mit", "techcrunch", "theverge", "arstechnica", "venturebeat", "wired", "cnbc"]):
+                    return "国际媒体"
+                else:
+                    return "英文媒体"
+            else:
+                return "其他语言媒体"
+        elif source_type == "reddit":
+            return "社区讨论 (Reddit)"
+        elif source_type == "twitter" or source_type == "x":
+            return "社交媒体 (X/Twitter)"
+        elif source_type == "web_scraper":
+            return "网页爬虫"
+        elif source_type == "api":
+            return "API数据"
+        elif source_type == "hackernews":
+            return "社区讨论 (Hacker News)"
+        else:
+            return "其他来源"
+
     def generate_summary_report(self, items: List[NewsItem], orchestrator=None, top_n: int = None) -> str:
         """
         生成摘要报告（简洁版）
@@ -145,16 +188,32 @@ class ReportGenerator:
         else:
             display_items = evaluated_items[:top_n]
 
-        # 显示所有新闻
-        for i, item in enumerate(display_items, 1):
-            summary_lines.append(f"## {i}. {item.title}")
-            summary_lines.append(f"**热度**: {item.hotness_score:.1f}/10")
-            summary_lines.append(f"**来源**: {item.source} ({item.source_type})")
-            summary_lines.append(f"**发布时间**: {item.publish_date.strftime('%Y-%m-%d %H:%M') if item.publish_date else '未知'}")
-            summary_lines.append(f"**链接**: {item.url}")
-            if item.summary:
-                summary_lines.append(f"**摘要**: {item.summary[:200]}...")
+        # 按频道分组
+        channels = {}
+        for item in display_items:
+            channel = self._get_channel(item)
+            if channel not in channels:
+                channels[channel] = []
+            channels[channel].append(item)
+
+        # 按频道名称排序
+        sorted_channels = sorted(channels.items())
+
+        item_counter = 1
+        for channel_name, channel_items in sorted_channels:
+            summary_lines.append(f"## 🗂️ {channel_name} ({len(channel_items)}条)")
             summary_lines.append("")
+
+            for item in channel_items:
+                summary_lines.append(f"### {item_counter}. {item.title}")
+                summary_lines.append(f"**热度**: {item.hotness_score:.1f}/10")
+                summary_lines.append(f"**来源**: {item.source} ({item.source_type})")
+                summary_lines.append(f"**发布时间**: {item.publish_date.strftime('%Y-%m-%d %H:%M') if item.publish_date else '未知'}")
+                summary_lines.append(f"**链接**: [阅读原文]({item.url})")
+                if item.summary:
+                    summary_lines.append(f"**摘要**: {item.summary[:200]}...")
+                summary_lines.append("")
+                item_counter += 1
 
         # 统计信息
         summary_lines.append("## 📊 统计信息")

@@ -117,6 +117,57 @@ fetch_config:
 2. 根据数据源类型选择相应的抓取器类型
 3. 调整过滤参数和抓取数量
 
+## 翻译功能
+
+技能生成的报告主要为英文和中文新闻。如需将英文新闻翻译为中英双语，可以使用以下提示词让大模型自行翻译：
+
+```markdown
+请将以下英文新闻翻译成中文，并保持中英双语对照格式：
+
+[英文新闻标题]
+[英文新闻摘要]
+
+翻译要求：
+1. 保持专业术语准确性
+2. 译文自然流畅
+3. 中英文对照显示
+4. 保留原文链接和出处信息
+
+也可以使用更简洁的提示词：
+
+"将以下英文AI新闻翻译为中文，并提供中英双语对照："
+```
+
+### 使用示例
+
+假设报告中有以下英文新闻条目：
+
+```
+## 1. OpenAI releases new multimodal model
+**热度**: 8.5/10
+**来源**: OpenAI Blog (rss)
+**发布时间**: 2024-05-13 10:30
+**链接**: [阅读原文](https://openai.com/blog/new-multimodal-model)
+**摘要**: OpenAI has announced a new multimodal model that can process text, images, and audio simultaneously...
+```
+
+使用提示词后，大模型将生成：
+
+```
+## 1. OpenAI发布新的多模态模型
+**热度**: 8.5/10
+**来源**: OpenAI Blog (rss)
+**发布时间**: 2024-05-13 10:30
+**链接**: [阅读原文](https://openai.com/blog/new-multimodal-model)
+
+**英文摘要**: OpenAI has announced a new multimodal model that can process text, images, and audio simultaneously...
+**中文翻译**: OpenAI宣布了一个新的多模态模型，可以同时处理文本、图像和音频...
+
+**中英双语摘要**:
+- **英文**: OpenAI has announced a new multimodal model that can process text, images, and audio simultaneously.
+- **中文**: OpenAI宣布了一个新的多模态模型，可以同时处理文本、图像和音频。
+```
+
 ## 计划功能
 
 - [ ] 支持更多社交媒体平台 (LinkedIn, 微博等)

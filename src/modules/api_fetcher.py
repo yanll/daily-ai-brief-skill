@@ -154,6 +154,7 @@ class APIFetcher(BaseFetcher):
             新闻条目
         """
         title = story_data.get("title", "")
+        title = self.cleanup_content(title)
         url = story_data.get("url", "")
 
         # 如果没有外部URL，使用HN讨论页
@@ -165,8 +166,7 @@ class APIFetcher(BaseFetcher):
         text = story_data.get("text", "")
         if text:
             # 清理HTML标签
-            import re
-            text = re.sub(r'<[^>]+>', '', text)
+            text = self.cleanup_content(text)
 
         # 提取发布时间
         publish_date = None
@@ -183,7 +183,7 @@ class APIFetcher(BaseFetcher):
             title=title,
             url=url,
             content=text,
-            summary=text[:200] if text else title,
+            summary=self.cleanup_content(text[:200] if text else title),
             source=self.name,
             source_type="hackernews",
             language=self.language,
@@ -260,9 +260,15 @@ class APIFetcher(BaseFetcher):
         """
         # 尝试从常见字段中提取信息
         title = article.get("title", article.get("name", article.get("headline", "")))
+        title = self.cleanup_content(title)
+
         url = article.get("url", article.get("link", article.get("webUrl", "")))
         content = article.get("content", article.get("body", article.get("description", article.get("summary", ""))))
         summary = article.get("summary", article.get("description", content[:200] if content else ""))
+
+        # 清理内容
+        content = self.cleanup_content(content)
+        summary = self.cleanup_content(summary)
 
         # 提取发布时间
         publish_date = None
@@ -299,9 +305,6 @@ class APIFetcher(BaseFetcher):
             tags = [str(tag) for tag in tags_field]
         elif isinstance(tags_field, str):
             tags = [tag.strip() for tag in tags_field.split(",")]
-
-        # 清理内容
-        content = self.cleanup_content(content)
 
         item = NewsItem(
             title=title,

@@ -91,11 +91,12 @@ class XFetcher(BaseFetcher):
 
         items = []
         for tweet in mock_tweets:
+            content = self.cleanup_content(tweet["content"])
             item = NewsItem(
                 title=tweet["title"],
                 url=tweet["url"],
-                content=tweet["content"],
-                summary=tweet["content"][:200],
+                content=content,
+                summary=self.cleanup_content(content[:200]),
                 source=self.name,
                 source_type="twitter",
                 language=self.language,
@@ -254,11 +255,12 @@ class XPlaywrightFetcher(BaseFetcher):
                 except ValueError:
                     pass
 
+        title_clean = self.cleanup_content(title)
         item = NewsItem(
-            title=title,
+            title=title_clean,
             url=url,
-            content=title,
-            summary=title[:150],
+            content=title_clean,
+            summary=self.cleanup_content(title_clean[:150]),
             source=self.name,
             source_type="twitter",
             language=self.language,

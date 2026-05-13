@@ -118,7 +118,7 @@ class Orchestrator:
         try:
             items = await fetcher.fetch()
             elapsed = time.time() - start_time
-            self.logger.debug(f"抓取器 {fetcher.name} 完成，耗时 {elapsed:.2f}秒，获取 {len(items)} 个条目")
+            self.logger.info(f"抓取器 {fetcher.name} 完成，耗时 {elapsed:.2f}秒，获取 {len(items)} 个条目")
             return items
         except asyncio.CancelledError:
             raise

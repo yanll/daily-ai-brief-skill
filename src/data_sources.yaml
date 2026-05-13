@@ -153,7 +153,7 @@ rss_sources:
   - name: "Understanding AI"
     url: "https://understandingai.org/feed"
     language: "en"
-    enabled: true
+    enabled: false
     priority: 2
     num_items: 5
 
@@ -313,7 +313,7 @@ x_sources:
     num_items: 5
 
   - name: "AI研究"
-    usernames: [ "berryxia", "MSFTResearch", "karpathy", "swyx", "vista8" ]
+    usernames: [ "berryxia", "berryxia", "MSFTResearch", "karpathy", "swyx", "vista8" ]
     language: "en"
     enabled: true
     priority: 3

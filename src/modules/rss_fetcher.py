@@ -73,6 +73,7 @@ class RSSFetcher(BaseFetcher):
         """解析RSS条目"""
         # 提取标题
         title = getattr(entry, 'title', '无标题')
+        title = self.cleanup_content(title)
 
         # 提取链接
         link = getattr(entry, 'link', '')
