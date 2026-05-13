@@ -3,7 +3,8 @@
     "allow": [
       "Bash(claude skills *)",
       "Bash(claude plugin *)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(npm list *)"
     ]
   }
 }
