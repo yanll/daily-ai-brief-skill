@@ -463,8 +463,16 @@ class HotnessEvaluator:
                 channels[channel] = []
             channels[channel].append(item)
 
-        # 按频道名称排序（可选，保持固定顺序）
-        sorted_channels = sorted(channels.items())
+        # 按频道名称排序，确保"其他来源"在最后
+        def channel_sort_key(channel_item):
+            channel_name, _ = channel_item
+            # 如果频道是"其他来源"，返回一个大值确保排在最后
+            if channel_name == "其他来源":
+                return (1, channel_name)  # 1表示排在最后
+            else:
+                return (0, channel_name)  # 0表示正常排序
+
+        sorted_channels = sorted(channels.items(), key=channel_sort_key)
 
         item_counter = 1
         for channel_name, channel_items in sorted_channels:

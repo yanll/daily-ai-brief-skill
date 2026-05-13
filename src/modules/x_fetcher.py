@@ -40,27 +40,29 @@ class XFetcher(BaseFetcher):
 
         self.logger.info(f"开始抓取X/Twitter: {self.name} ({self.usernames})")
 
-        # 由于X/Twitter API限制严格，这里返回示例数据
-        # 实际实现应使用Playwright进行网页爬取或使用第三方服务
+        # 尝试使用Playwright进行真实抓取
+        try:
+            # 创建Playwright抓取器配置
+            playwright_config = self.config.copy()
+            playwright_config["use_playwright"] = True
+            playwright_fetcher = XPlaywrightFetcher(playwright_config)
+            items = await playwright_fetcher.fetch()
 
-        items = []
-        for username in self.usernames:
-            try:
-                # 模拟数据 - 实际应爬取真实内容
-                mock_items = await self._fetch_user_tweets(username)
-                items.extend(mock_items)
-            except Exception as e:
-                self.logger.error(f"抓取用户 {username} 失败: {e}")
+            if items:
+                self.logger.info(f"X/Twitter Playwright抓取成功: {self.name}, 获取 {len(items)} 个条目")
+                return items
+            else:
+                self.logger.warning(f"X/Twitter Playwright抓取返回空结果: {self.name}")
+                return []
 
-        # 应用过滤
-        filtered_items = self.apply_filters(items)
-
-        self.logger.info(f"X/Twitter抓取完成: {self.name}, 获取 {len(filtered_items)} 个条目")
-        return filtered_items
+        except Exception as e:
+            self.logger.warning(f"X/Twitter Playwright抓取失败，跳过模拟数据: {self.name}, 错误: {e}")
+            # 不返回模拟数据，只返回空列表
+            return []
 
     async def _fetch_user_tweets(self, username: str) -> List[NewsItem]:
         """
-        抓取用户推文（模拟实现）
+        抓取用户推文
 
         Args:
             username: 用户名
@@ -68,50 +70,52 @@ class XFetcher(BaseFetcher):
         Returns:
             新闻条目列表
         """
-        # 这里应该使用Playwright或Selenium爬取X/Twitter页面
-        # 由于时间限制，返回模拟数据
+        # X/Twitter抓取需要真实实现，这里返回空列表避免模拟数据
+        self.logger.info(f"X/Twitter抓取需要真实实现，跳过模拟数据: {username}")
+        return []
 
-        self.logger.warning(f"X/Twitter抓取器使用模拟数据，需要实现真实爬取逻辑: {username}")
-
-        # 模拟数据
-        mock_tweets = [
-            {
-                "title": f"AI breakthrough announced by {username}",
-                "content": f"Exciting news about AI developments from {username}. This is a simulated tweet content.",
-                "url": f"https://twitter.com/{username}/status/1234567890",
-                "date": datetime.now() - timedelta(hours=2),
-            },
-            {
-                "title": f"New research paper from {username}",
-                "content": f"Just published a new paper on machine learning. Read more at the link.",
-                "url": f"https://twitter.com/{username}/status/1234567891",
-                "date": datetime.now() - timedelta(days=1),
-            },
-        ]
-
-        items = []
-        for tweet in mock_tweets:
-            content = self.cleanup_content(tweet["content"])
-            item = NewsItem(
-                title=tweet["title"],
-                url=tweet["url"],
-                content=content,
-                summary=self.cleanup_content(content[:200]),
-                source=self.name,
-                source_type="twitter",
-                language=self.language,
-                publish_date=tweet["date"],
-                author=username,
-                tags=["twitter", "ai"],
-                metadata={
-                    "username": username,
-                    "platform": "twitter",
-                    "simulated": True,  # 标记为模拟数据
-                }
-            )
-            items.append(item)
-
-        return items
+        # 如果需要模拟数据用于测试，可以取消下面的注释
+        # self.logger.warning(f"X/Twitter抓取器使用模拟数据，需要实现真实爬取逻辑: {username}")
+        #
+        # # 模拟数据
+        # mock_tweets = [
+        #     {
+        #         "title": f"AI breakthrough announced by {username}",
+        #         "content": f"Exciting news about AI developments from {username}. This is a simulated tweet content.",
+        #         "url": f"https://twitter.com/{username}/status/1234567890",
+        #         "date": datetime.now() - timedelta(hours=2),
+        #     },
+        #     {
+        #         "title": f"New research paper from {username}",
+        #         "content": f"Just published a new paper on machine learning. Read more at the link.",
+        #         "url": f"https://twitter.com/{username}/status/1234567891",
+        #         "date": datetime.now() - timedelta(days=1),
+        #     },
+        # ]
+        #
+        # items = []
+        # for tweet in mock_tweets:
+        #     content = self.cleanup_content(tweet["content"])
+        #     item = NewsItem(
+        #         title=tweet["title"],
+        #         url=tweet["url"],
+        #         content=content,
+        #         summary=self.cleanup_content(content[:200]),
+        #         source=self.name,
+        #         source_type="twitter",
+        #         language=self.language,
+        #         publish_date=tweet["date"],
+        #         author=username,
+        #         tags=["twitter", "ai"],
+        #         metadata={
+        #             "username": username,
+        #             "platform": "twitter",
+        #             "simulated": True,  # 标记为模拟数据
+        #         }
+        #     )
+        #     items.append(item)
+        #
+        # return items
 
 
 class XPlaywrightFetcher(BaseFetcher):
@@ -136,9 +140,8 @@ class XPlaywrightFetcher(BaseFetcher):
             新闻条目列表
         """
         if not self.use_playwright:
-            self.logger.warning("Playwright未启用，使用基本抓取器")
-            basic_fetcher = XFetcher(self.config)
-            return await basic_fetcher.fetch()
+            self.logger.warning("Playwright未启用，返回空列表")
+            return []
 
         self.logger.info(f"使用Playwright抓取X/Twitter: {self.name}")
 

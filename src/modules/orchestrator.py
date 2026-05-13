@@ -140,10 +140,23 @@ class Orchestrator:
         if not self.results:
             return []
 
+        # 首先过滤模拟数据
+        real_results = []
+        simulated_count = 0
+        for item in self.results:
+            # 检查是否为模拟数据
+            if item.metadata.get("simulated", False):
+                simulated_count += 1
+                continue
+            real_results.append(item)
+
+        if simulated_count > 0:
+            self.logger.info(f"过滤掉 {simulated_count} 个模拟数据条目")
+
         # 过滤重复条目（基于URL）
         seen_urls = set()
         unique_results = []
-        for item in self.results:
+        for item in real_results:
             if item.url not in seen_urls:
                 seen_urls.add(item.url)
                 unique_results.append(item)
