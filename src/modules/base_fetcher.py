@@ -115,10 +115,13 @@ class BaseFetcher(abc.ABC):
 
             # 排除关键词检查
             if self.exclude_keywords:
-                # 检查是否包含任意排除关键词
+                # 检查是否包含任意排除关键词（使用单词边界）
                 excluded = False
                 for keyword in self.exclude_keywords:
-                    if keyword.lower() in text_to_check:
+                    # 使用正则表达式匹配单词边界
+                    import re
+                    pattern = r'\b' + re.escape(keyword.lower()) + r'\b'
+                    if re.search(pattern, text_to_check):
                         self.logger.debug(f"排除条目（含排除关键词）: {item.title[:50]}")
                         excluded = True
                         break
@@ -127,10 +130,13 @@ class BaseFetcher(abc.ABC):
 
             # 包含关键词检查（如果有配置）
             if self.include_keywords:
-                # 检查是否包含任意关键词
+                # 检查是否包含任意关键词（使用单词边界）
                 found = False
                 for keyword in self.include_keywords:
-                    if keyword.lower() in text_to_check:
+                    # 使用正则表达式匹配单词边界
+                    import re
+                    pattern = r'\b' + re.escape(keyword.lower()) + r'\b'
+                    if re.search(pattern, text_to_check):
                         found = True
                         break
                 if not found:
@@ -203,6 +209,10 @@ class BaseFetcher(abc.ABC):
         """
         if not content:
             return ""
+
+        # 确保content是字符串
+        if not isinstance(content, str):
+            content = str(content)
 
         # 移除多余空白字符
         content = re.sub(r'\s+', ' ', content)

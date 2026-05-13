@@ -30,6 +30,7 @@ daily-ai-brief-skill/
 - 生成数据采集代码，使用多线程并发执行各个采集模块
 - 需要支持网页、RSS、API等多种方式，可以使用Playwright、Requests、Selenium、Fake-useragent等依赖，不限制三方组件的使用，结果是第一要务
 - 最终将main.py作为项目运行入口触发工具执行
+- 单个渠道采集失败不要影响整体的报告输出
 
 ### Step3:
 
@@ -38,4 +39,3 @@ daily-ai-brief-skill/
 ## 工作铁律
 
 - 每个渠道必须写测试脚本验证结果，若验证失败仔细检查并修复
-- 
