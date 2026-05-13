@@ -446,13 +446,7 @@ class HotnessEvaluator:
             display_count = len(display_items)
 
         report_lines = []
-        report_lines.append("# AI新闻完整报告")
-        report_lines.append(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        report_lines.append(f"总条目数: {len(items)}")
-        if top_n is None:
-            report_lines.append("")
-        else:
-            report_lines.append(f"显示前 {display_count} 个热点")
+        report_lines.append("# 今日AI热点新闻")
         report_lines.append("")
 
         # 按频道分组
@@ -491,5 +485,15 @@ class HotnessEvaluator:
                     report_lines.append(f"**摘要**: {item.content[:300]}..." if item.content else "**摘要**: 无")
                 report_lines.append("")
                 item_counter += 1
+
+        # 在报告最后添加生成时间和统计信息
+        report_lines.append("## 📊 报告信息")
+        report_lines.append(f"- **生成时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        report_lines.append(f"- **总条目数**: {len(items)}")
+        if top_n is None:
+            report_lines.append(f"- **显示**: 所有新闻条目")
+        else:
+            report_lines.append(f"- **显示**: 前 {display_count} 个热点")
+        report_lines.append("")
 
         return "\n".join(report_lines)

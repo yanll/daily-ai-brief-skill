@@ -173,20 +173,16 @@ class ReportGenerator:
 
         # 生成摘要内容
         summary_lines = []
-        summary_lines.append("# AI新闻列表")
-        summary_lines.append(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        summary_lines.append(f"总条目数: {len(evaluated_items)}")
-        if top_n is None:
-            summary_lines.append("")
-        else:
-            summary_lines.append(f"显示前 {top_n} 个条目")
+        summary_lines.append("# AI热点新闻摘要")
         summary_lines.append("")
 
         # 决定显示哪些条目
         if top_n is None:
             display_items = evaluated_items
+            display_count = len(evaluated_items)
         else:
             display_items = evaluated_items[:top_n]
+            display_count = top_n
 
         # 按频道分组
         channels = {}
@@ -225,7 +221,12 @@ class ReportGenerator:
 
         # 统计信息
         summary_lines.append("## 📊 统计信息")
-        summary_lines.append(f"- 总条目数: {len(evaluated_items)}")
+        summary_lines.append(f"- **生成时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        summary_lines.append(f"- **总条目数**: {len(evaluated_items)}")
+        if top_n is None:
+            summary_lines.append(f"- **显示**: 所有新闻条目 ({display_count}条)")
+        else:
+            summary_lines.append(f"- **显示**: 前 {display_count} 个条目")
 
         # 抓取器统计
         if orchestrator:
@@ -294,7 +295,6 @@ class ReportGenerator:
 
         # 生成统计文本
         stats_lines = []
-        stats_lines.append(f"- 总条目数: {total_items}")
         stats_lines.append(f"- 热门条目（≥7分）: {hot_items}")
         stats_lines.append(f"- 24小时内新闻: {recent_24h}")
 
