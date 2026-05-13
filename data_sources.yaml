@@ -1,176 +1,500 @@
-# AI新闻数据源配置（修复版）
-# 更新为实际可用的AI新闻RSS源
+# AI新闻数据源配置（增强版 - 整合source.bak全部数据源）
 
-# RSS数据源配置（优化版 - 使用可靠来源）
+# RSS数据源配置
 rss_sources:
-  # 36氪 - AI/科技新闻（国内可靠来源）
+  # ===== 国内媒体 =====
   - name: "36氪 AI科技"
     url: "https://www.36kr.com/feed"
     language: "zh"
     enabled: true
     priority: 1
-    num_items: 10  # 该渠道默认采集条数
+    num_items: 10
     filters:
       include_keywords: ["AI", "人工智能", "OpenAI", "模型", "芯片", "GPT", "Claude", "深度学习", "机器学习", "大模型"]
-    
-  # MIT Technology Review - AI专题（已验证可用）
+
+  - name: "机器之心"
+    url: "https://www.jiqizhixin.com/rss"
+    language: "zh"
+    enabled: true
+    priority: 1
+    num_items: 10
+
+  - name: "量子位"
+    url: "https://www.qbitai.com/feed"
+    language: "zh"
+    enabled: true
+    priority: 1
+    num_items: 8
+
+  - name: "新智元"
+    url: "https://www.xinzhiyuan.com/feed"
+    language: "zh"
+    enabled: true
+    priority: 2
+    num_items: 6
+
+  - name: "InfoQ AI"
+    url: "https://www.infoq.cn/public/v1/article/list"
+    language: "zh"
+    enabled: true
+    priority: 2
+    num_items: 6
+    filters:
+      include_keywords: ["AI", "人工智能", "大模型", "LLM", "深度学习"]
+
+  - name: "AI科技评论"
+    url: "https://www.leiphone.com/feed"
+    language: "zh"
+    enabled: true
+    priority: 2
+    num_items: 6
+    filters:
+      include_keywords: ["AI", "人工智能", "大模型", "GPT", "芯片"]
+
+  # ===== 国际主流媒体 =====
   - name: "MIT Technology Review AI"
     url: "https://www.technologyreview.com/topic/artificial-intelligence/feed/"
     language: "en"
     enabled: true
     priority: 1
-    num_items: 8  # 该渠道默认采集条数
-    
-  # TechCrunch AI（可靠的技术新闻）
+    num_items: 8
+
   - name: "TechCrunch AI"
     url: "https://techcrunch.com/category/artificial-intelligence/feed/"
     language: "en"
     enabled: true
     priority: 1
-    num_items: 8  # 该渠道默认采集条数
-    
-  # The Verge AI（知名科技媒体）
+    num_items: 8
+
   - name: "The Verge AI"
     url: "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml"
     language: "en"
     enabled: true
     priority: 2
-    num_items: 6  # 该渠道默认采集条数
-    
-  # Ars Technica AI（深度技术分析）
+    num_items: 6
+
   - name: "Ars Technica AI"
     url: "https://arstechnica.com/tag/artificial-intelligence/feed/"
     language: "en"
     enabled: true
     priority: 2
-    num_items: 6  # 该渠道默认采集条数
-    
-  # 机器之心 - 专业AI媒体（国内优质来源）
-  - name: "机器之心 AI新闻"
-    url: "https://www.jiqizhixin.com/rss"
-    language: "zh"
+    num_items: 6
+
+  - name: "VentureBeat AI"
+    url: "https://venturebeat.com/category/ai/feed/"
+    language: "en"
     enabled: true
     priority: 1
-    num_items: 8  # 该渠道默认采集条数
-    
-  # AI Weekly Newsletter（专门AI新闻）
+    num_items: 8
+
+  - name: "Wired AI"
+    url: "https://www.wired.com/feed/tag/artificial-intelligence/latest/rss"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 6
+
+  - name: "CNBC Tech"
+    url: "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10001147"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 6
+
+  # ===== Newsletter / 周报 =====
   - name: "AI Weekly"
     url: "https://aiweekly.co/rss.xml"
     language: "en"
     enabled: true
     priority: 2
-    num_items: 5  # 该渠道默认采集条数
-    
-  # Google AI Blog（官方AI博客）
+    num_items: 5
+
+  - name: "The Neuron Daily"
+    url: "https://theneurondaily.com/feed"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 5
+
+  - name: "TLDR AI"
+    url: "https://tldr.tech/api/ai/rss"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 5
+
+  - name: "Ben's Bites"
+    url: "https://bensbites.beehiiv.com/feed"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 5
+
+  # ===== 关键 Substack / 独立博客 =====
+  - name: "Simon Willison"
+    url: "https://simonwillison.net/atom/everything/"
+    language: "en"
+    enabled: true
+    priority: 1
+    num_items: 8
+
+  - name: "Gary Marcus"
+    url: "https://garymarcus.substack.com/feed"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 5
+
+  - name: "Ethan Mollick"
+    url: "https://oneusefulthing.substack.com/feed"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 5
+
+  - name: "Understanding AI"
+    url: "https://understandingai.org/feed"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 5
+
+  - name: "Cognitive Revolution"
+    url: "https://cognitiverevolution.substack.com/feed"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 5
+
+  - name: "Interconnects"
+    url: "https://interconnects.ai/feed"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 5
+
+  - name: "AI Tidbits"
+    url: "https://aitidbits.substack.com/feed"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 5
+
+  # ===== 学术与研究 =====
   - name: "Google AI Blog"
     url: "https://ai.googleblog.com/feeds/posts/default"
     language: "en"
     enabled: true
     priority: 1
-    num_items: 5  # 该渠道默认采集条数
+    num_items: 5
 
-# X/Twitter数据源（通过Nitter或类似服务）
+  - name: "OpenAI Blog"
+    url: "https://openai.com/blog/rss.xml"
+    language: "en"
+    enabled: true
+    priority: 1
+    num_items: 5
+
+  - name: "Anthropic News"
+    url: "https://www.anthropic.com/feed/news.xml"
+    language: "en"
+    enabled: true
+    priority: 1
+    num_items: 5
+
+  - name: "DeepMind Blog"
+    url: "https://deepmind.com/blog/feed/basic/"
+    language: "en"
+    enabled: true
+    priority: 1
+    num_items: 5
+
+  - name: "Meta AI Blog"
+    url: "https://ai.meta.com/blog/rss/"
+    language: "en"
+    enabled: true
+    priority: 1
+    num_items: 5
+
+  - name: "Hugging Face Blog"
+    url: "https://huggingface.co/blog/feed.xml"
+    language: "en"
+    enabled: true
+    priority: 1
+    num_items: 5
+
+  - name: "arXiv CS.AI"
+    url: "https://rss.arxiv.org/rss/cs.AI"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 8
+
+  - name: "arXiv CS.LG"
+    url: "https://rss.arxiv.org/rss/cs.LG"
+    language: "en"
+    enabled: true
+    priority: 3
+    num_items: 5
+
+  # ===== 安全与批评视角 =====
+  - name: "Trail of Bits Blog"
+    url: "https://blog.trailofbits.com/feed/"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 5
+    filters:
+      include_keywords: ["AI", "machine learning", "LLM", "security"]
+
+  - name: "Palo Alto Networks Blog"
+    url: "https://www.paloaltonetworks.com/blog/feed/"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 5
+    filters:
+      include_keywords: ["AI", "artificial intelligence", "machine learning"]
+
+  # ===== 开源项目追踪 =====
+  - name: "GitHub Trending AI"
+    url: "https://mshibanami.github.io/GitHubTrendingRSS/daily/all.xml"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 8
+    filters:
+      include_keywords: ["AI", "LLM", "GPT", "model", "neural", "transformer", "deep-learning", "machine-learning"]
+
+  - name: "Product Hunt AI"
+    url: "https://www.producthunt.com/feed"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 5
+    filters:
+      include_keywords: ["AI", "artificial intelligence", "GPT", "LLM"]
+
+  # ===== 社区与论坛 =====
+  - name: "Hacker News AI"
+    url: "https://hnrss.org/newest?q=AI+OR+LLM+OR+GPT+OR+OpenAI+OR+machine+learning"
+    language: "en"
+    enabled: true
+    priority: 1
+    num_items: 10
+
+  - name: "Reddit MachineLearning"
+    url: "https://www.reddit.com/r/MachineLearning/.rss"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 8
+
+  - name: "Reddit LocalLLaMA"
+    url: "https://www.reddit.com/r/LocalLLaMA/.rss"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 8
+
+  - name: "Reddit Artificial"
+    url: "https://www.reddit.com/r/artificial/.rss"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 5
+
+  - name: "Reddit Singularity"
+    url: "https://www.reddit.com/r/singularity/.rss"
+    language: "en"
+    enabled: true
+    priority: 3
+    num_items: 5
+
+# X/Twitter数据源
 x_sources:
   - name: "SenseTime AI"
     username: "SenseTime_AI"
     language: "en"
     enabled: true
     priority: 1
-    num_items: 5  # 该渠道默认采集条数
-    
+    num_items: 5
+
   - name: "OpenRouter"
     username: "OpenRouter"
     language: "en"
     enabled: true
     priority: 1
-    num_items: 5  # 该渠道默认采集条数
-    
+    num_items: 5
+
   - name: "腾讯混元"
     username: "TencentHunyuan"
     language: "zh"
     enabled: true
     priority: 1
-    num_items: 5  # 该渠道默认采集条数
-    
+    num_items: 5
+
   - name: "Anthropic相关"
     usernames: ["frxiaobei", "kimmonismus", "xiaohu"]
     language: "en"
     enabled: true
     priority: 2
-    num_items: 5  # 该渠道默认采集条数
-    
+    num_items: 5
+
   - name: "Luma AI"
     username: "LumaLabsAI"
     language: "en"
     enabled: true
     priority: 2
-    num_items: 5  # 该渠道默认采集条数
-    
+    num_items: 5
+
   - name: "阿里云"
     username: "alibaba_cloud"
     language: "zh"
     enabled: true
     priority: 1
-    num_items: 5  # 该渠道默认采集条数
-    
+    num_items: 5
+
   - name: "AI行业观察"
     usernames: ["AYi_AInotes", "MiniMax_AI"]
     language: "zh"
     enabled: true
     priority: 2
-    num_items: 5  # 该渠道默认采集条数
-    
+    num_items: 5
+
   - name: "AI研究"
     usernames: ["berryxia", "MSFTResearch", "karpathy", "swyx", "vista8"]
     language: "en"
     enabled: true
     priority: 3
-    num_items: 5  # 该渠道默认采集条数
+    num_items: 5
 
-# 网页爬虫配置（针对特定网站）
+  - name: "Andrew Ng"
+    username: "AndrewYNg"
+    language: "en"
+    enabled: true
+    priority: 1
+    num_items: 5
+
+  - name: "Sam Altman"
+    username: "sama"
+    language: "en"
+    enabled: true
+    priority: 1
+    num_items: 5
+
+  - name: "Jim Fan"
+    username: "DrJimFan"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 5
+
+  - name: "Andrej Karpathy"
+    username: "karpathy"
+    language: "en"
+    enabled: true
+    priority: 1
+    num_items: 5
+
+# 网页爬虫配置
 web_scrapers:
   - name: "Claude官方博客"
-    url: "https://claude.com/blog"
+    url: "https://www.anthropic.com/news"
     selector: "article"
     language: "en"
     enabled: true
     priority: 1
-    num_items: 5  # 该渠道默认采集条数
-    
+    num_items: 5
+
+  - name: "Papers With Code"
+    url: "https://paperswithcode.com"
+    selector: ".paper-card"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 5
+
+  - name: "Hugging Face Models"
+    url: "https://huggingface.co/models"
+    selector: ".model-card"
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 5
+
   - name: "开源PPT工具"
     url: "https://github.com/op7418/guizang-ppt"
     selector: ".markdown-body"
     language: "zh"
     enabled: true
     priority: 3
-    num_items: 5  # 该渠道默认采集条数
+    num_items: 5
 
-# API数据源配置（暂时禁用，需要API密钥）
+  - name: "即刻AI圈子"
+    url: "https://okjike.com"
+    selector: ".topic-item"
+    language: "zh"
+    enabled: true
+    priority: 3
+    num_items: 5
+
+  - name: "V2EX AI"
+    url: "https://www.v2ex.com/go/ai"
+    selector: ".topic-link"
+    language: "zh"
+    enabled: true
+    priority: 3
+    num_items: 5
+
+  - name: "知乎AI"
+    url: "https://www.zhihu.com/topic/19551275/hot"
+    selector: ".ContentItem"
+    language: "zh"
+    enabled: true
+    priority: 2
+    num_items: 5
+
+# API数据源配置
 api_sources:
-  - name: "GitHub Releases API"
+  - name: "GitHub Trending API"
     type: "github"
-    endpoint: "https://api.github.com/repos/{owner}/{repo}/releases"
+    endpoint: "https://api.github.com/search/repositories?q=ai+language:python&sort=stars&order=desc"
     params:
       per_page: 10
-    enabled: false  # 暂时禁用，需要修复URL格式和认证
+    enabled: true
     priority: 2
-    num_items: 5  # 该渠道默认采集条数
+    num_items: 8
+
+  - name: "Hacker News API"
+    type: "hackernews"
+    endpoint: "https://hacker-news.firebaseio.com/v0/topstories.json"
+    params: {}
+    enabled: true
+    priority: 1
+    num_items: 10
+
+  - name: "Papers With Code API"
+    type: "generic"
+    endpoint: "https://paperswithcode.com/api/v1/papers/"
+    params:
+      ordering: "-published"
+      limit: 10
+    enabled: true
+    priority: 2
+    num_items: 8
 
 # 数据获取配置
 fetch_config:
-  # 通用配置
   max_items_per_source: 15
   timeout_seconds: 30
   user_agent: "AI-Daily-Brief/2.0 (+https://github.com/ai-daily-brief)"
 
-
-  # 重试配置
   max_retries: 2
   retry_delay_seconds: 2
-  
-  # 内容过滤
-  min_content_length: 30
-  max_content_length: 500
+
+  min_content_length: 20
+  max_content_length: 800
   exclude_keywords:
     - "sponsored"
     - "advertisement"
@@ -178,72 +502,146 @@ fetch_config:
     - "buy now"
     - "广告"
     - "推广"
-  
-  # 语言配置
+
   preferred_languages:
     - "zh"
     - "en"
-  
-  # 时间范围 (小时)
-  max_age_hours: 72  # 3天内的新闻
+
+  max_age_hours: 72
+
+# 搜索关键词矩阵（来自source.bak）
+search_keywords:
+  newsletter:
+    - "last week in AI"
+    - "AI weekly roundup"
+    - "site:substack.com AI news"
+  viral:
+    - "viral AI tool"
+    - "viral AI agent"
+    - "AI trending site:reddit.com"
+    - "GitHub trending AI"
+    - "AI everyone is talking about"
+  product_launch:
+    - "AI model release"
+    - "LLM launch"
+    - "OpenAI OR Anthropic OR Google announcement"
+    - "大模型发布"
+    - "AI 新产品"
+  research:
+    - "AI breakthrough"
+    - "state of the art"
+    - "AI paper"
+    - "machine learning research"
+  business:
+    - "AI startup funding"
+    - "AI acquisition"
+    - "AI IPO"
+  regulation:
+    - "AI regulation"
+    - "AI policy"
+    - "AI law"
+    - "AI 监管"
 
 # 数据源优先级配置
 source_priority:
-  # 按类型优先级
   type_priority:
-    - "rss"      # RSS源最可靠
-    - "api"      # API次之
-    - "web"      # 网页爬虫最后
-  
-  # 按可信度权重
+    - "rss"
+    - "api"
+    - "web"
+
   credibility_weights:
-    "official": 1.0      # 官方渠道
-    "tech_media": 0.8    # 技术媒体
-    "social_media": 0.6  # 社交媒体
-    "personal_blog": 0.5 # 个人博客
-  
-  # 渠道可信度映射
+    "official": 1.0
+    "tech_media": 0.8
+    "social_media": 0.6
+    "personal_blog": 0.5
+
   channel_credibility:
     "openai.com": "official"
     "anthropic.com": "official"
     "claude.com": "official"
     "apple.com": "official"
-    "ithome.com": "tech_media"
+    "ai.googleblog.com": "official"
+    "deepmind.com": "official"
+    "ai.meta.com": "official"
+    "huggingface.co": "official"
+    "technologyreview.com": "tech_media"
+    "techcrunch.com": "tech_media"
+    "theverge.com": "tech_media"
+    "arstechnica.com": "tech_media"
+    "venturebeat.com": "tech_media"
+    "wired.com": "tech_media"
+    "cnbc.com": "tech_media"
+    "36kr.com": "tech_media"
+    "jiqizhixin.com": "tech_media"
+    "qbitai.com": "tech_media"
+    "xinzhiyuan.com": "tech_media"
+    "infoq.cn": "tech_media"
+    "leiphone.com": "tech_media"
     "github.com": "tech_media"
+    "arxiv.org": "official"
     "simonwillison.net": "personal_blog"
+    "substack.com": "personal_blog"
     "x.com": "social_media"
     "twitter.com": "social_media"
-
-
+    "reddit.com": "social_media"
+    "news.ycombinator.com": "social_media"
+    "okjike.com": "social_media"
+    "v2ex.com": "social_media"
+    "zhihu.com": "social_media"
 
 # 数据验证配置
 data_validation:
   enabled: true
-  
-  # 必填字段验证
+
   required_fields:
     - "title"
     - "source"
-  
-  # 字段长度验证
+
   field_length_limits:
     title:
       min: 5
       max: 200
     description:
-      min: 20
+      min: 10
       max: 1000
-  
-  # 链接验证
+
   validate_links: true
   allowed_domains:
     - "openai.com"
     - "anthropic.com"
     - "claude.com"
     - "apple.com"
+    - "ai.googleblog.com"
+    - "deepmind.com"
+    - "ai.meta.com"
+    - "huggingface.co"
     - "ithome.com"
     - "github.com"
     - "simonwillison.net"
     - "x.com"
     - "twitter.com"
     - "machinelearning.apple.com"
+    - "technologyreview.com"
+    - "techcrunch.com"
+    - "theverge.com"
+    - "arstechnica.com"
+    - "venturebeat.com"
+    - "wired.com"
+    - "cnbc.com"
+    - "36kr.com"
+    - "jiqizhixin.com"
+    - "qbitai.com"
+    - "xinzhiyuan.com"
+    - "infoq.cn"
+    - "leiphone.com"
+    - "arxiv.org"
+    - "paperswithcode.com"
+    - "reddit.com"
+    - "news.ycombinator.com"
+    - "substack.com"
+    - "okjike.com"
+    - "v2ex.com"
+    - "zhihu.com"
+    - "paloaltonetworks.com"
+    - "blog.trailofbits.com"
+    - "producthunt.com"
