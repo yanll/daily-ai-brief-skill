@@ -8,7 +8,7 @@ AI Daily News Aggregator Skill for OpenClaw, Claude Code & Hermes Agent
 daily-ai-brief-skill/
 ├── src/                    # 源码目录
 │   ├── test                # 测试脚本目录（生成的测试脚本必须放在此目录）
-│   ├── datasources         # 信息数据源（各个信息渠道的采集模模块代码文件）
+│   ├── modules             # 功能模块（各个信息渠道的采集模模块代码文件）
 │   ├── main.py             # 运行入口
 ├── requirements.txt        # 依赖列表
 ├── SKILL.md                # 技能描述
