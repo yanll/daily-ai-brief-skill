@@ -43,7 +43,7 @@ rss_sources:
   - name: "AI科技评论"
     url: "https://www.leiphone.com/feed"
     language: "zh"
-    enabled: true
+    enabled: false
     priority: 2
     num_items: 6
     filters:
@@ -313,11 +313,25 @@ x_sources:
     num_items: 5
 
   - name: "AI研究"
-    usernames: [ "berryxia", "berryxia", "MSFTResearch", "karpathy", "swyx", "vista8" ]
+    usernames: [ "berryxia", "MSFTResearch", "karpathy", "swyx", "vista8", "ylecun", "ilyasut", "emollick", "nathanbenaich" ]
     language: "en"
     enabled: true
-    priority: 3
-    num_items: 5
+    priority: 2
+    num_items: 8
+
+  - name: "AI机构账号"
+    usernames: [ "OpenAI", "AnthropicAI", "GoogleDeepMind", "MetaAI", "nvidiaai" ]
+    language: "en"
+    enabled: true
+    priority: 1
+    num_items: 8
+
+  - name: "AI媒体账号"
+    usernames: [ "TechCrunchAI", "techreviewAI", "vergeai" ]
+    language: "en"
+    enabled: true
+    priority: 2
+    num_items: 6
 
   - name: "Sam Altman"
     username: "sama"
@@ -344,6 +358,43 @@ web_scrapers:
     enabled: true
     priority: 2
     num_items: 5
+    use_playwright: true
+
+  # ===== 国内研究机构 =====
+  - name: "中国信通院"
+    url: "https://www.caict.ac.cn/kxyj/"
+    selector: "article, .news-item, .research-item"
+    language: "zh"
+    enabled: true
+    priority: 2
+    num_items: 5
+    use_playwright: true
+
+  - name: "清华大学人工智能研究院"
+    url: "https://air.tsinghua.edu.cn/"
+    selector: "article, .news-item, .research-item"
+    language: "zh"
+    enabled: true
+    priority: 2
+    num_items: 5
+    use_playwright: true
+
+  - name: "Bloomberg AI"
+    url: "https://www.bloomberg.com/technology/artificial-intelligence"
+    selector: "article, .story, .news-item"
+    language: "en"
+    enabled: true
+    priority: 1
+    num_items: 8
+    use_playwright: true
+
+  - name: "Reuters AI"
+    url: "https://www.reuters.com/technology/artificial-intelligence/"
+    selector: "article, .story, .news-article"
+    language: "en"
+    enabled: true
+    priority: 1
+    num_items: 8
     use_playwright: true
 
 # API数据源配置

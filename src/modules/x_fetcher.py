@@ -189,7 +189,8 @@ class XPlaywrightFetcher(BaseFetcher):
         self.logger.info(f"爬取用户: @{username}")
 
         try:
-            url = f"https://twitter.com/{username}"
+            # 使用Nitter进行无登录采集
+            url = f"https://nitter.net/{username}"
             await page.goto(url, wait_until="networkidle")
             await page.wait_for_timeout(self.playwright_wait_seconds * 1000)
 
@@ -241,11 +242,11 @@ class XPlaywrightFetcher(BaseFetcher):
 
         # 尝试提取链接
         link_elements = await tweet_element.query_selector_all('a[href*="/status/"]')
-        url = f"https://twitter.com/{username}"
+        url = f"https://nitter.net/{username}"
         if link_elements:
             href = await link_elements[0].get_attribute("href")
             if href:
-                url = f"https://twitter.com{href}"
+                url = f"https://nitter.net{href}"
 
         # 尝试提取时间
         time_elements = await tweet_element.query_selector_all('time')
