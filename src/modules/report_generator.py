@@ -356,7 +356,7 @@ class ReportGenerator:
 
         # 生成报告文件名
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"ai_news_structured_{timestamp}.md"
+        filename = f"ai_news_report_{timestamp}.md"
         filepath = os.path.join(self.output_dir, filename)
 
         # 生成报告内容
@@ -516,23 +516,15 @@ class ReportGenerator:
         reports = {}
 
         try:
-            reports["daily"] = self.generate_daily_report(items, orchestrator)
-        except Exception as e:
-            self.logger.error(f"生成每日报告失败: {e}")
-
-        try:
-            reports["json"] = self.generate_json_report(items)
-        except Exception as e:
-            self.logger.error(f"生成JSON报告失败: {e}")
-
-        try:
-            reports["summary"] = self.generate_summary_report(items, orchestrator)
-        except Exception as e:
-            self.logger.error(f"生成摘要报告失败: {e}")
-
-        try:
+            # 只生成结构化报告（最全最优的Markdown报告）
             reports["structured"] = self.generate_structured_report(items, orchestrator)
         except Exception as e:
             self.logger.error(f"生成结构化报告失败: {e}")
+
+        try:
+            # 保留JSON报告作为机器可读格式
+            reports["json"] = self.generate_json_report(items)
+        except Exception as e:
+            self.logger.error(f"生成JSON报告失败: {e}")
 
         return reports

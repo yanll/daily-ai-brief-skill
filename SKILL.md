@@ -49,9 +49,8 @@ python src/main.py
 ### 4. 查看报告
 
 报告将自动生成在 `reports/` 目录下：
-- `ai_news_report_YYYYMMDD_HHMMSS.md` - 详细Markdown报告
-- `ai_news_summary_YYYYMMDD_HHMMSS.md` - 简洁摘要报告
-- `ai_news_report_YYYYMMDD_HHMMSS.json` - JSON格式数据
+- `ai_news_report_YYYYMMDD_HHMMSS.md` - 最全最优的Markdown报告（包含所有新闻条目，按类别结构化组织）
+- `ai_news_report_YYYYMMDD_HHMMSS.json` - JSON格式数据（机器可读）
 
 ## 配置说明
 
