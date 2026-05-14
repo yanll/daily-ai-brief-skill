@@ -447,7 +447,8 @@ class ReportGenerator:
                 report_lines.append(f"**发布时间**: {item.publish_date.strftime('%Y-%m-%d %H:%M') if item.publish_date else '未知'}")
                 report_lines.append(f"**链接**: [阅读原文]({item.url})")
                 if item.summary:
-                    report_lines.append(f"**摘要**: {item.summary[:250]}...")
+                    report_lines.append(f"**摘要**:")
+                    report_lines.append(f"{item.summary[:250]}...")
                 report_lines.append("")
 
         # 添加统计信息
