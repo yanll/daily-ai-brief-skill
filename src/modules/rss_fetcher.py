@@ -5,6 +5,7 @@ RSS抓取器
 import asyncio
 import feedparser
 import logging
+import time
 from typing import List, Dict, Any
 from datetime import datetime
 from urllib.parse import urlparse
@@ -36,6 +37,7 @@ class RSSFetcher(BaseFetcher):
             return []
 
         self.logger.info(f"开始抓取RSS: {self.name} ({self.url})")
+        start_time = time.time()
 
         try:
             # feedparser是同步库，使用线程池避免阻塞事件循环
@@ -58,11 +60,13 @@ class RSSFetcher(BaseFetcher):
             # 应用过滤
             filtered_items = self.apply_filters(items)
 
-            self.logger.info(f"RSS抓取完成: {self.name}, 获取 {len(filtered_items)} 个条目")
+            elapsed = time.time() - start_time
+            self.logger.info(f"RSS抓取完成: {self.name}, 获取 {len(filtered_items)} 个条目, 耗时 {elapsed:.2f}秒")
             return filtered_items
 
         except Exception as e:
-            self.logger.error(f"抓取RSS失败 {self.name}: {e}")
+            elapsed = time.time() - start_time
+            self.logger.error(f"抓取RSS失败 {self.name}, 耗时 {elapsed:.2f}秒: {e}")
             return []
 
     def _parse_feed(self, url: str) -> feedparser.FeedParserDict:

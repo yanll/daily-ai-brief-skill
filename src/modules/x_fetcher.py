@@ -4,6 +4,7 @@ X/Twitter抓取器
 """
 import asyncio
 import logging
+import time
 from typing import List, Dict, Any
 from datetime import datetime, timedelta
 
@@ -39,6 +40,7 @@ class XFetcher(BaseFetcher):
             return []
 
         self.logger.info(f"开始抓取X/Twitter: {self.name} ({self.usernames})")
+        start_time = time.time()
 
         # 尝试使用Playwright进行真实抓取
         try:
@@ -48,15 +50,17 @@ class XFetcher(BaseFetcher):
             playwright_fetcher = XPlaywrightFetcher(playwright_config)
             items = await playwright_fetcher.fetch()
 
+            elapsed = time.time() - start_time
             if items:
-                self.logger.info(f"X/Twitter Playwright抓取成功: {self.name}, 获取 {len(items)} 个条目")
+                self.logger.info(f"X/Twitter Playwright抓取成功: {self.name}, 获取 {len(items)} 个条目, 耗时 {elapsed:.2f}秒")
                 return items
             else:
-                self.logger.warning(f"X/Twitter Playwright抓取返回空结果: {self.name}")
+                self.logger.warning(f"X/Twitter Playwright抓取返回空结果: {self.name}, 耗时 {elapsed:.2f}秒")
                 return []
 
         except Exception as e:
-            self.logger.warning(f"X/Twitter Playwright抓取失败，跳过模拟数据: {self.name}, 错误: {e}")
+            elapsed = time.time() - start_time
+            self.logger.warning(f"X/Twitter Playwright抓取失败，跳过模拟数据: {self.name}, 耗时 {elapsed:.2f}秒, 错误: {e}")
             # 不返回模拟数据，只返回空列表
             return []
 
@@ -144,6 +148,7 @@ class XPlaywrightFetcher(BaseFetcher):
             return []
 
         self.logger.info(f"使用Playwright抓取X/Twitter: {self.name}")
+        start_time = time.time()
 
         try:
             # 导入Playwright（延迟导入）
@@ -165,14 +170,17 @@ class XPlaywrightFetcher(BaseFetcher):
 
             # 应用过滤
             filtered_items = self.apply_filters(items)
-            self.logger.info(f"Playwright抓取完成: {self.name}, 获取 {len(filtered_items)} 个条目")
+            elapsed = time.time() - start_time
+            self.logger.info(f"Playwright抓取完成: {self.name}, 获取 {len(filtered_items)} 个条目, 耗时 {elapsed:.2f}秒")
             return filtered_items
 
         except ImportError:
-            self.logger.error("Playwright未安装，请运行: pip install playwright && playwright install")
+            elapsed = time.time() - start_time
+            self.logger.error(f"Playwright未安装，请运行: pip install playwright && playwright install, 耗时 {elapsed:.2f}秒")
             return []
         except Exception as e:
-            self.logger.error(f"Playwright抓取失败: {e}")
+            elapsed = time.time() - start_time
+            self.logger.error(f"Playwright抓取失败, 耗时 {elapsed:.2f}秒: {e}")
             return []
 
     async def _fetch_user_with_playwright(self, page, username: str) -> List[NewsItem]:

@@ -4,6 +4,7 @@ Reddit抓取器
 """
 import asyncio
 import logging
+import time
 from typing import List, Dict, Any
 from datetime import datetime
 
@@ -48,6 +49,7 @@ class RedditFetcher(BaseFetcher):
             return []
 
         self.logger.info(f"开始抓取Reddit: r/{self.subreddit}")
+        start_time = time.time()
 
         try:
             # 使用RSS抓取器获取数据
@@ -66,11 +68,13 @@ class RedditFetcher(BaseFetcher):
                     # 可以添加Reddit特定处理逻辑
                     pass
 
-            self.logger.info(f"Reddit抓取完成: r/{self.subreddit}, 获取 {len(items)} 个条目")
+            elapsed = time.time() - start_time
+            self.logger.info(f"Reddit抓取完成: r/{self.subreddit}, 获取 {len(items)} 个条目, 耗时 {elapsed:.2f}秒")
             return items
 
         except Exception as e:
-            self.logger.error(f"抓取Reddit失败 r/{self.subreddit}: {e}")
+            elapsed = time.time() - start_time
+            self.logger.error(f"抓取Reddit失败 r/{self.subreddit}, 耗时 {elapsed:.2f}秒: {e}")
             return []
 
 

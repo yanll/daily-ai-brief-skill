@@ -4,6 +4,7 @@ API抓取器
 """
 import asyncio
 import logging
+import time
 from typing import List, Dict, Any
 from datetime import datetime
 import aiohttp
@@ -40,6 +41,7 @@ class APIFetcher(BaseFetcher):
             return []
 
         self.logger.info(f"开始调用API: {self.name} ({self.endpoint})")
+        start_time = time.time()
 
         try:
             # 根据API类型选择不同的解析方法
@@ -51,11 +53,13 @@ class APIFetcher(BaseFetcher):
             # 应用过滤
             filtered_items = self.apply_filters(items)
 
-            self.logger.info(f"API抓取完成: {self.name}, 获取 {len(filtered_items)} 个条目")
+            elapsed = time.time() - start_time
+            self.logger.info(f"API抓取完成: {self.name}, 获取 {len(filtered_items)} 个条目, 耗时 {elapsed:.2f}秒")
             return filtered_items
 
         except Exception as e:
-            self.logger.error(f"API调用失败 {self.name}: {e}")
+            elapsed = time.time() - start_time
+            self.logger.error(f"API调用失败 {self.name}, 耗时 {elapsed:.2f}秒: {e}")
             return []
 
     async def _fetch_generic_api(self) -> List[NewsItem]:

@@ -90,7 +90,6 @@ class Orchestrator:
                 })
             elif isinstance(result, list):
                 self.results.extend(result)
-                self.logger.info(f"抓取器 {fetcher.name} 获取了 {len(result)} 个条目")
             else:
                 self.logger.warning(f"抓取器 {fetcher.name} 返回了意外结果类型: {type(result)}")
                 self.failed_fetchers.append({
@@ -116,14 +115,10 @@ class Orchestrator:
         start_time = time.time()
         try:
             items = await fetcher.fetch()
-            elapsed = time.time() - start_time
-            self.logger.info(f"抓取器 {fetcher.name} 完成，耗时 {elapsed:.2f}秒，获取 {len(items)} 个条目")
             return items
         except asyncio.CancelledError:
             raise
         except Exception as e:
-            elapsed = time.time() - start_time
-            self.logger.error(f"抓取器 {fetcher.name} 失败，耗时 {elapsed:.2f}秒: {e}")
             return []
 
     def filter_results(self, max_age_hours: int = 72) -> List[NewsItem]:
