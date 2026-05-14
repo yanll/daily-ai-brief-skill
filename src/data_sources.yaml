@@ -3,7 +3,6 @@ rss_sources:
   # ===== 国内媒体 =====
   - name: "36氪"
     url: "https://www.36kr.com/feed"
-    language: "zh"
     enabled: true
     priority: 1
     num_items: 10
@@ -12,21 +11,18 @@ rss_sources:
 
   - name: "量子位"
     url: "https://www.qbitai.com/feed"
-    language: "zh"
     enabled: true
     priority: 1
     num_items: 8
 
   - name: "新智元"
     url: "https://www.xinzhiyuan.com/feed"
-    language: "zh"
     enabled: false
     priority: 2
     num_items: 6
 
   - name: "InfoQ AI"
     url: "https://www.infoq.cn/public/v1/article/list"
-    language: "zh"
     enabled: false
     priority: 2
     num_items: 6
@@ -35,7 +31,6 @@ rss_sources:
 
   - name: "AI科技评论"
     url: "https://www.leiphone.com/feed"
-    language: "zh"
     enabled: false
     priority: 2
     num_items: 6
@@ -45,49 +40,42 @@ rss_sources:
   # ===== 国际主流媒体 =====
   - name: "MIT Technology Review AI"
     url: "https://www.technologyreview.com/topic/artificial-intelligence/feed/"
-    language: "en"
     enabled: false
     priority: 1
     num_items: 8
 
   - name: "TechCrunch AI"
     url: "https://techcrunch.com/category/artificial-intelligence/feed/"
-    language: "en"
     enabled: false
     priority: 1
     num_items: 8
 
   - name: "The Verge AI"
     url: "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 6
 
   - name: "Ars Technica AI"
     url: "https://arstechnica.com/tag/artificial-intelligence/feed/"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 6
 
   - name: "VentureBeat AI"
     url: "https://venturebeat.com/category/ai/feed/"
-    language: "en"
     enabled: false
     priority: 1
     num_items: 8
 
   - name: "Wired AI"
     url: "https://www.wired.com/feed/tag/artificial-intelligence/latest/rss"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 6
 
   - name: "CNBC Tech"
     url: "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10001147"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 6
@@ -95,28 +83,24 @@ rss_sources:
   # ===== Newsletter / 周报 =====
   - name: "AI Weekly"
     url: "https://aiweekly.co/rss.xml"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 5
 
   - name: "The Neuron Daily"
     url: "https://theneurondaily.com/feed"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 5
 
   - name: "TLDR AI"
     url: "https://tldr.tech/api/ai/rss"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 5
 
   - name: "Ben's Bites"
     url: "https://bensbites.beehiiv.com/feed"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 5
@@ -124,49 +108,42 @@ rss_sources:
   # ===== 关键 Substack / 独立博客 =====
   - name: "Simon Willison"
     url: "https://simonwillison.net/atom/everything/"
-    language: "en"
     enabled: false
     priority: 1
     num_items: 8
 
   - name: "Gary Marcus"
     url: "https://garymarcus.substack.com/feed"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 5
 
   - name: "Ethan Mollick"
     url: "https://oneusefulthing.substack.com/feed"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 5
 
   - name: "Understanding AI"
     url: "https://understandingai.org/feed"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 5
 
   - name: "Cognitive Revolution"
     url: "https://cognitiverevolution.substack.com/feed"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 5
 
   - name: "Interconnects"
     url: "https://interconnects.ai/feed"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 5
 
   - name: "AI Tidbits"
     url: "https://aitidbits.substack.com/feed"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 5
@@ -174,28 +151,24 @@ rss_sources:
   # ===== 学术与研究 =====
   - name: "OpenAI Blog"
     url: "https://openai.com/blog/rss.xml"
-    language: "en"
     enabled: false
     priority: 1
     num_items: 5
 
   - name: "Hugging Face Blog"
     url: "https://huggingface.co/blog/feed.xml"
-    language: "en"
     enabled: false
     priority: 1
     num_items: 5
 
   - name: "arXiv CS.AI"
     url: "https://rss.arxiv.org/rss/cs.AI"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 8
 
   - name: "arXiv CS.LG"
     url: "https://rss.arxiv.org/rss/cs.LG"
-    language: "en"
     enabled: false
     priority: 3
     num_items: 5
@@ -203,7 +176,6 @@ rss_sources:
   # ===== 安全与批评视角 =====
   - name: "Trail of Bits Blog"
     url: "https://blog.trailofbits.com/feed/"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 5
@@ -212,7 +184,6 @@ rss_sources:
 
   - name: "Palo Alto Networks Blog"
     url: "https://www.paloaltonetworks.com/blog/feed/"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 5
@@ -222,7 +193,6 @@ rss_sources:
   # ===== 官方可用博客 =====
   - name: "DeepMind Blog"
     url: "https://deepmind.com/blog/feed/basic/"
-    language: "en"
     enabled: false
     priority: 1
     num_items: 10
@@ -232,7 +202,6 @@ reddit_sources:
   - name: "Reddit MachineLearning"
     type: "reddit"
     subreddit: "MachineLearning"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 10
@@ -240,7 +209,6 @@ reddit_sources:
   - name: "Reddit LocalLLaMA"
     type: "reddit"
     subreddit: "LocalLLaMA"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 10
@@ -248,7 +216,6 @@ reddit_sources:
   - name: "Reddit Artificial"
     type: "reddit"
     subreddit: "artificial"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 8
@@ -256,7 +223,6 @@ reddit_sources:
   - name: "Reddit Singularity"
     type: "reddit"
     subreddit: "singularity"
-    language: "en"
     enabled: false
     priority: 3
     num_items: 5
@@ -265,70 +231,60 @@ reddit_sources:
 x_sources:
   - name: "OpenRouter"
     username: "OpenRouter"
-    language: "en"
     enabled: false
     priority: 1
     num_items: 5
 
   - name: "腾讯混元"
     username: "TencentHunyuan"
-    language: "zh"
     enabled: false
     priority: 1
     num_items: 5
 
   - name: "Anthropic相关"
     usernames: [ "frxiaobei", "kimmonismus", "xiaohu" ]
-    language: "en"
     enabled: false
     priority: 2
     num_items: 5
 
   - name: "Luma AI"
     username: "LumaLabsAI"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 5
 
   - name: "阿里云"
     username: "alibaba_cloud"
-    language: "zh"
     enabled: false
     priority: 1
     num_items: 5
 
   - name: "AI行业观察"
     usernames: [ "AYi_AInotes", "MiniMax_AI" ]
-    language: "zh"
     enabled: false
     priority: 2
     num_items: 5
 
   - name: "AI研究"
     usernames: [ "berryxia", "MSFTResearch", "karpathy", "swyx", "vista8", "ylecun", "ilyasut", "emollick", "nathanbenaich" ]
-    language: "en"
     enabled: false
     priority: 2
     num_items: 8
 
   - name: "AI机构账号"
     usernames: [ "OpenAI", "AnthropicAI", "GoogleDeepMind", "MetaAI", "nvidiaai" ]
-    language: "en"
     enabled: false
     priority: 1
     num_items: 8
 
   - name: "AI媒体账号"
     usernames: [ "TechCrunchAI", "techreviewAI", "vergeai" ]
-    language: "en"
     enabled: false
     priority: 2
     num_items: 6
 
   - name: "Sam Altman"
     username: "sama"
-    language: "en"
     enabled: false
     priority: 1
     num_items: 5
@@ -338,7 +294,6 @@ web_scrapers:
   - name: "Google DeepMind Blog"
     url: "https://deepmind.google/blog/"
     selector: "article"
-    language: "en"
     enabled: false
     priority: 1
     num_items: 5
@@ -347,7 +302,6 @@ web_scrapers:
   - name: "Hugging Face Models"
     url: "https://huggingface.co/models"
     selector: ".model-card"
-    language: "en"
     enabled: false
     priority: 2
     num_items: 5
@@ -357,7 +311,6 @@ web_scrapers:
   - name: "中国信通院"
     url: "https://www.caict.ac.cn/kxyj/"
     selector: "article, .news-item, .research-item"
-    language: "zh"
     enabled: false
     priority: 2
     num_items: 5
@@ -366,7 +319,6 @@ web_scrapers:
   - name: "清华大学人工智能研究院"
     url: "https://air.tsinghua.edu.cn/"
     selector: "article, .news-item, .research-item"
-    language: "zh"
     enabled: false
     priority: 2
     num_items: 5
@@ -375,7 +327,6 @@ web_scrapers:
   - name: "Bloomberg AI"
     url: "https://www.bloomberg.com/technology/artificial-intelligence"
     selector: "article, .story, .news-item"
-    language: "en"
     enabled: false
     priority: 1
     num_items: 8
@@ -384,7 +335,6 @@ web_scrapers:
   - name: "Reuters AI"
     url: "https://www.reuters.com/technology/artificial-intelligence/"
     selector: "article, .story, .news-article"
-    language: "en"
     enabled: false
     priority: 1
     num_items: 8
@@ -414,8 +364,5 @@ fetch_config:
     - "buy now"
     - "广告"
     - "推广"
-  preferred_languages:
-    - "zh"
-    - "en"
   max_age_hours: 72
   playwright_wait_seconds: 2
