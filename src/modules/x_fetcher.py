@@ -142,39 +142,90 @@ class XPlaywrightFetcher(BaseFetcher):
         """
         self.logger.info(f"爬取用户: @{username}")
 
-        try:
-            # 使用Nitter进行无登录采集
-            url = f"https://nitter.net/{username}"
-            await page.goto(url, wait_until="networkidle")
-            await page.wait_for_timeout(self.playwright_wait_seconds * 1000)
+        # Nitter实例列表（按优先级排序）
+        nitter_instances = [
+            "https://nitter.net",
+            "https://nitter.fdn.fr",
+            "https://nitter.1d4.us",
+            "https://nitter.unixfox.eu",
+            "https://nitter.nixnet.services",
+        ]
 
-            # 这里需要根据X/Twitter页面结构提取推文
-            # 实际实现需要分析页面DOM结构
-            # 示例选择器（可能需要调整）
-            tweet_selectors = [
-                'article[data-testid="tweet"]',
-                'div[data-testid="tweet"]',
-                'div[role="article"]',
-            ]
+        for nitter_base in nitter_instances:
+            try:
+                # 使用Nitter进行无登录采集
+                url = f"{nitter_base}/{username}"
+                self.logger.info(f"尝试Nitter实例: {url}")
+                response = await page.goto(url, wait_until="networkidle", timeout=15000)
 
-            items = []
-            for selector in tweet_selectors:
-                tweets = await page.query_selector_all(selector)
-                if tweets:
-                    for tweet in tweets[:self.max_items]:
-                        try:
-                            item = await self._parse_tweet_element(tweet, username)
-                            if item:
-                                items.append(item)
-                        except Exception as e:
-                            self.logger.debug(f"解析推文失败: {e}")
-                    break
+                if response and response.status != 200:
+                    self.logger.warning(f"Nitter实例返回状态码 {response.status}: {nitter_base}")
+                    continue
 
-            return items
+                await page.wait_for_timeout(self.playwright_wait_seconds * 1000)
 
-        except Exception as e:
-            self.logger.error(f"爬取用户 @{username} 失败: {e}")
-            return []
+                # 检查页面是否包含有效内容
+                content = await page.content()
+                if len(content) < 100:
+                    self.logger.warning(f"Nitter实例返回内容过少 ({len(content)} 字节): {nitter_base}")
+                    continue
+
+                # 检查是否有错误消息
+                error_selectors = [
+                    'text=User not found',
+                    'text=User suspended',
+                    'text=This account is private',
+                    'text=Something went wrong',
+                    'text=Rate limit exceeded',
+                ]
+
+                has_error = False
+                for selector in error_selectors:
+                    if await page.is_visible(selector):
+                        self.logger.warning(f"页面包含错误: {selector}")
+                        has_error = True
+                        break
+
+                if has_error:
+                    continue
+
+                # 这里需要根据X/Twitter页面结构提取推文
+                # 实际实现需要分析页面DOM结构
+                # 示例选择器（可能需要调整）
+                tweet_selectors = [
+                    'article[data-testid="tweet"]',
+                    'div[data-testid="tweet"]',
+                    'div[role="article"]',
+                    '.tweet',
+                    'article',
+                ]
+
+                items = []
+                for selector in tweet_selectors:
+                    tweets = await page.query_selector_all(selector)
+                    if tweets:
+                        self.logger.info(f"找到 {len(tweets)} 个推文 (选择器: {selector})")
+                        for tweet in tweets[:self.max_items]:
+                            try:
+                                item = await self._parse_tweet_element(tweet, username)
+                                if item:
+                                    items.append(item)
+                            except Exception as e:
+                                self.logger.debug(f"解析推文失败: {e}")
+                        break
+
+                if items:
+                    self.logger.info(f"成功从 {nitter_base} 获取 {len(items)} 个推文")
+                    return items
+                else:
+                    self.logger.warning(f"从 {nitter_base} 未找到推文")
+
+            except Exception as e:
+                self.logger.warning(f"Nitter实例 {nitter_base} 失败: {e}")
+                continue
+
+        self.logger.error(f"所有Nitter实例均失败: @{username}")
+        return []
 
     async def _parse_tweet_element(self, tweet_element, username: str) -> NewsItem:
         """

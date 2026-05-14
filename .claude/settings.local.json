@@ -15,7 +15,8 @@
       "Bash(pip list *)",
       "Bash(python3 -c *)",
       "Bash(python3 *)",
-      "Bash(grep -E *)"
+      "Bash(grep -E *)",
+      "Bash(curl -L -s *)"
     ]
   }
 }
