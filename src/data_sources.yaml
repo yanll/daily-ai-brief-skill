@@ -13,7 +13,7 @@ rss_sources:
   - name: "量子位"
     url: "https://www.qbitai.com/feed"
     language: "zh"
-    enabled: false
+    enabled: true
     priority: 1
     num_items: 8
 

@@ -115,12 +115,12 @@ class BaseFetcher(abc.ABC):
 
             # 排除关键词检查
             if self.exclude_keywords:
-                # 检查是否包含任意排除关键词（使用单词边界）
+                # 检查是否包含任意排除关键词（使用改进的边界，允许中文后跟）
                 excluded = False
                 for keyword in self.exclude_keywords:
-                    # 使用正则表达式匹配单词边界
+                    # 使用正则表达式匹配，前后不能是英文字母
                     import re
-                    pattern = r'\b' + re.escape(keyword.lower()) + r'\b'
+                    pattern = r'(?<![a-zA-Z])' + re.escape(keyword.lower()) + r'(?![a-zA-Z])'
                     if re.search(pattern, text_to_check):
                         self.logger.debug(f"排除条目（含排除关键词）: {item.title[:50]}")
                         excluded = True
@@ -130,12 +130,12 @@ class BaseFetcher(abc.ABC):
 
             # 包含关键词检查（如果有配置）
             if self.include_keywords:
-                # 检查是否包含任意关键词（使用单词边界）
+                # 检查是否包含任意关键词（使用改进的边界，允许中文后跟）
                 found = False
                 for keyword in self.include_keywords:
-                    # 使用正则表达式匹配单词边界
+                    # 使用正则表达式匹配，前后不能是英文字母
                     import re
-                    pattern = r'\b' + re.escape(keyword.lower()) + r'\b'
+                    pattern = r'(?<![a-zA-Z])' + re.escape(keyword.lower()) + r'(?![a-zA-Z])'
                     if re.search(pattern, text_to_check):
                         found = True
                         break
