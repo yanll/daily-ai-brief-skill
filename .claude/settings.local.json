@@ -5,10 +5,14 @@
       "Bash(claude plugin *)",
       "WebSearch",
       "Bash(npm list *)",
-      "WebFetch(domain:clawhub.ai)",
+      "WebFetch(domain:*)",
       "Bash(openclaw skills *)",
-      "Bash(python -m pytest src/test/*.py -v)",
-      "Bash(python *)"
+      "Bash(python -m pytest * -v)",
+      "Bash(python *)",
+      "Bash(curl -I *)",
+      "Bash(curl -s *)",
+      "Bash(curl -v *)",
+      "Bash(pip list *)"
     ]
   }
 }

@@ -1,6 +1,15 @@
 # RSS数据源配置
 rss_sources:
   # ===== 国内媒体 =====
+  - name: "36氪 AI科技"
+    url: "https://www.36kr.com/feed"
+    language: "zh"
+    enabled: true
+    priority: 1
+    num_items: 10
+    filters:
+      include_keywords: [ "AI", "人工智能", "OpenAI", "模型", "芯片", "GPT", "Claude", "深度学习", "机器学习", "大模型" ]
+
   - name: "量子位"
     url: "https://www.qbitai.com/feed"
     language: "zh"
@@ -343,18 +352,6 @@ web_scrapers:
     priority: 2
     num_items: 5
     use_playwright: true
-
-  # ===== 国内媒体网页抓取 =====
-  - name: "36氪 AI信息"
-    url: "https://www.36kr.com/information/AI"
-    selector: "article, .article-item, .information-item, .news-item"
-    language: "zh"
-    enabled: true
-    priority: 1
-    num_items: 10
-    use_playwright: true
-    filters:
-      include_keywords: [ "AI", "人工智能", "OpenAI", "模型", "芯片", "GPT", "Claude", "深度学习", "机器学习", "大模型" ]
 
   # ===== 国内研究机构 =====
   - name: "中国信通院"
