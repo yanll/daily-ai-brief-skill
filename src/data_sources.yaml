@@ -11,9 +11,12 @@ rss_sources:
 
   - name: "量子位"
     url: "https://www.qbitai.com/feed"
-    enabled: false
+    enabled: true
     priority: 1
     num_items: 10
+
+  - name: "虎嗅"
+    enabled: false
 
   # ===== 国际主流媒体 =====
   - name: "MIT Technology Review AI"
@@ -239,7 +242,7 @@ x_sources:
 
   - name: "AI行业观察"
     usernames: [ "AYi_AInotes", "MiniMax_AI" ]
-    enabled: false
+    enabled: true
     priority: 2
     num_items: 5
 
