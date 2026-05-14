@@ -155,26 +155,22 @@ class ReportGenerator:
         Returns:
             频道名称
         """
-        source_type = item.source_type.lower()
-        source = item.source.lower()
-        language = item.language.lower()
+        source_type = item.source_type.lower() if item.source_type else ""
+        source = item.source.lower() if item.source else ""
 
-        # 根据source_type和language判断频道
+        # 根据source_type判断频道
         if source_type == "rss":
-            if language == "zh":
+            # 根据来源名称判断是国内还是国际媒体
+            if any(kw in source for kw in ["36kr", "36氪", "qbitai", "量子位", "xinzhiyuan", "新智元", "infoq", "leiphone", "ai科技评论"]):
                 return "国内媒体"
-            elif language == "en":
-                # 进一步根据来源判断
-                if "arxiv" in source:
-                    return "学术研究"
-                elif any(kw in source for kw in ["openai", "anthropic", "google", "deepmind", "meta", "microsoft", "huggingface"]):
-                    return "官方博客"
-                elif any(kw in source for kw in ["mit", "techcrunch", "theverge", "arstechnica", "venturebeat", "wired", "cnbc"]):
-                    return "国际媒体"
-                else:
-                    return "英文媒体"
+            elif "arxiv" in source:
+                return "学术研究"
+            elif any(kw in source for kw in ["openai", "anthropic", "google", "deepmind", "meta", "microsoft", "huggingface"]):
+                return "官方博客"
+            elif any(kw in source for kw in ["mit", "techcrunch", "theverge", "arstechnica", "venturebeat", "wired", "cnbc"]):
+                return "国际媒体"
             else:
-                return "其他语言媒体"
+                return "其他RSS源"
         elif source_type == "reddit":
             return "社区讨论 (Reddit)"
         elif source_type == "twitter" or source_type == "x":
@@ -496,7 +492,8 @@ class ReportGenerator:
         for item in items:
             source_counts[item.source] = source_counts.get(item.source, 0) + 1
             source_type_counts[item.source_type] = source_type_counts.get(item.source_type, 0) + 1
-            language_counts[item.language] = language_counts.get(item.language, 0) + 1
+            lang = item.language or "unknown"
+            language_counts[lang] = language_counts.get(lang, 0) + 1
 
         # 时间统计
         now = datetime.now()

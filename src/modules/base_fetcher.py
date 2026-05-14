@@ -24,6 +24,7 @@ class NewsItem:
         author: str = "",
         tags: List[str] = None,
         metadata: Dict[str, Any] = None,
+        language: str = "en",
     ):
         self.title = title
         self.url = url
@@ -35,6 +36,7 @@ class NewsItem:
         self.author = author
         self.tags = tags or []
         self.metadata = metadata or {}
+        self.language = language
 
         # 计算热度分数（初始为0，后续由热度评估模块计算）
         self.hotness_score: float = 0.0
@@ -52,6 +54,7 @@ class NewsItem:
             "author": self.author,
             "tags": self.tags,
             "hotness_score": self.hotness_score,
+            "language": self.language,
             "metadata": self.metadata,
         }
 
@@ -74,6 +77,7 @@ class BaseFetcher(abc.ABC):
         self.enabled = config.get("enabled", True)
         self.priority = config.get("priority", 3)
         self.max_items = config.get("num_items", 10)
+        self.language = config.get("language", "en")
         self.logger = logging.getLogger(f"{self.__class__.__name__}.{self.name}")
 
         # 过滤配置

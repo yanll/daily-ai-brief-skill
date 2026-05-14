@@ -193,6 +193,7 @@ class APIFetcher(BaseFetcher):
             publish_date=publish_date,
             author=author,
             tags=["hackernews"],
+            language=self.language,
             metadata={
                 "type": story_data.get("type", "story"),
                 "score": score,
@@ -241,6 +242,7 @@ class APIFetcher(BaseFetcher):
                             content=str(item_data),
                             source=self.name,
                             source_type="api",
+                            language=self.language,
                             metadata={"raw_data": str(item_data)[:500]}
                         )
                     if item:
@@ -318,6 +320,7 @@ class APIFetcher(BaseFetcher):
             publish_date=publish_date,
             author=author,
             tags=tags,
+            language=self.language,
             metadata={
                 "api_endpoint": self.endpoint,
                 "api_type": self.type,
