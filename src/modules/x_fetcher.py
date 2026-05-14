@@ -64,19 +64,6 @@ class XFetcher(BaseFetcher):
             # 不返回模拟数据，只返回空列表
             return []
 
-    async def _fetch_user_tweets(self, username: str) -> List[NewsItem]:
-        """
-        抓取用户推文
-
-        Args:
-            username: 用户名
-
-        Returns:
-            新闻条目列表
-        """
-        # X/Twitter抓取需要真实实现，这里返回空列表避免模拟数据
-        self.logger.info(f"X/Twitter抓取需要真实实现，跳过模拟数据: {username}")
-        return []
 
 
 

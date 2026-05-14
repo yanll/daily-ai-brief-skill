@@ -66,15 +66,6 @@ class ConfigLoader:
         """获取抓取配置"""
         return self.config.get('fetch_config', {})
 
-    def get_all_sources(self) -> Dict[str, List[Dict[str, Any]]]:
-        """获取所有数据源"""
-        return {
-            'rss_sources': self.get_rss_sources(),
-            'reddit_sources': self.get_reddit_sources(),
-            'x_sources': self.get_x_sources(),
-            'web_scrapers': self.get_web_scrapers(),
-            'api_sources': self.get_api_sources(),
-        }
 
 
 # 全局配置实例
@@ -90,8 +81,3 @@ def get_config_loader() -> ConfigLoader:
     return _config_loader
 
 
-def reload_config() -> Dict[str, Any]:
-    """重新加载配置"""
-    global _config_loader
-    _config_loader = ConfigLoader()
-    return _config_loader.load()

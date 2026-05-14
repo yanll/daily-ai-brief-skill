@@ -111,27 +111,6 @@ class FetcherFactory:
             self.logger.error(f"创建抓取器失败 {config.get('name', 'unknown')}: {e}")
             return None
 
-    def create_fetcher_by_source_type(self, source_type: str, config: Dict[str, Any]) -> Optional[BaseFetcher]:
-        """
-        根据数据源类型创建抓取器
-
-        Args:
-            source_type: 数据源类型（rss_sources, reddit_sources等）
-            config: 单个数据源配置
-
-        Returns:
-            抓取器实例
-        """
-        type_mapping = {
-            "rss_sources": "rss",
-            "reddit_sources": "reddit",
-            "x_sources": "x",
-            "web_scrapers": "web",
-            "api_sources": "api",
-        }
-
-        fetcher_type = type_mapping.get(source_type, "rss")
-        return self.create_fetcher(fetcher_type, config)
 
 
 # 全局工厂实例
