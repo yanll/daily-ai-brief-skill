@@ -88,7 +88,7 @@ class ReportGenerator:
         # 根据source_type判断频道
         if source_type == "rss":
             # 根据来源名称判断是国内还是国际媒体
-            if any(kw in source for kw in ["36kr", "36氪", "qbitai", "量子位", "leiphone", "ai科技评论"]):
+            if any(kw in source for kw in ["36kr", "36氪", "qbitai", "量子位"]):
                 return "国内媒体"
             elif "arxiv" in source:
                 return "学术研究"

@@ -21,7 +21,7 @@ tags: [ai, news, aggregator]
 
 ## 数据源覆盖
 
-- **国内媒体**: 36氪、量子位、新智元、AI科技评论等
+- **国内媒体**: 36氪、量子位、新智元等
 - **国际媒体**: MIT Technology Review、TechCrunch、The Verge、Ars Technica、VentureBeat、Wired等
 - **学术研究**: OpenAI Blog、Hugging Face Blog、arXiv CS.AI/CS.LG等
 - **社区平台**: Reddit (MachineLearning, LocalLLaMA等)、X/Twitter关键账号

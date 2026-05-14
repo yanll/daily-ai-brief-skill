@@ -15,14 +15,6 @@ rss_sources:
     priority: 1
     num_items: 10
 
-  - name: "AI科技评论"
-    url: "https://www.leiphone.com/feed"
-    enabled: false
-    priority: 2
-    num_items: 6
-    filters:
-      include_keywords: [ "AI", "人工智能", "大模型", "GPT", "芯片" ]
-
   # ===== 国际主流媒体 =====
   - name: "MIT Technology Review AI"
     url: "https://www.technologyreview.com/topic/artificial-intelligence/feed/"
