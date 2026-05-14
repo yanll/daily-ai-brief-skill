@@ -44,8 +44,8 @@ class ReportGenerator:
         Returns:
             报告文件路径
         """
-        # 评估热度
-        evaluated_items = self.hotness_evaluator.evaluate_all(items)
+        # 按发布时间降序排序
+        sorted_items = sorted(items, key=lambda x: x.publish_date, reverse=True)
 
         # 生成报告文件名
         date_str = datetime.now().strftime("%Y%m%d")
@@ -53,15 +53,53 @@ class ReportGenerator:
         filename = f"ai_news_report_{timestamp}.md"
         filepath = os.path.join(self.output_dir, filename)
 
-        # 生成报告内容 - 显示所有新闻
-        report_content = self.hotness_evaluator.generate_hotness_report(evaluated_items, top_n=None)
+        # 生成简单报告内容
+        report_lines = []
+        report_lines.append("# 今日AI新闻")
+        report_lines.append(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        report_lines.append(f"总条目数: {len(sorted_items)}")
+        report_lines.append("")
+
+        # 按频道分组
+        channels = {}
+        for item in sorted_items:
+            channel = self._get_channel(item)
+            if channel not in channels:
+                channels[channel] = []
+            channels[channel].append(item)
+
+        # 按频道名称排序，确保"其他来源"在最后
+        def channel_sort_key(channel_item):
+            channel_name, _ = channel_item
+            if channel_name == "其他来源":
+                return (1, channel_name)
+            else:
+                return (0, channel_name)
+
+        sorted_channels = sorted(channels.items(), key=channel_sort_key)
+
+        item_counter = 1
+        for channel_name, channel_items in sorted_channels:
+            report_lines.append(f"## 🗂️ {channel_name} ({len(channel_items)}条)")
+            report_lines.append("")
+
+            for item in channel_items:
+                report_lines.append(f"### {item_counter}. {item.title}")
+                report_lines.append(f"**来源**: {item.source} ({item.source_type})")
+                report_lines.append(f"**发布时间**: {item.publish_date.strftime('%Y-%m-%d %H:%M') if item.publish_date else '未知'}")
+                report_lines.append(f"**链接**: [阅读原文]({item.url})")
+                if item.summary:
+                    report_lines.append(f"**摘要**: {item.summary[:300]}...")
+                report_lines.append("")
+                item_counter += 1
 
         # 添加统计信息
-        stats = self._generate_statistics(evaluated_items, orchestrator)
-        report_content += "\n\n## 统计信息\n"
-        report_content += stats
+        stats = self._generate_statistics(sorted_items, orchestrator)
+        report_lines.append("## 统计信息")
+        report_lines.append(stats)
 
         # 保存报告
+        report_content = "\n".join(report_lines)
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(report_content)
 
@@ -248,8 +286,8 @@ class ReportGenerator:
         Returns:
             摘要报告文件路径
         """
-        # 评估热度
-        evaluated_items = self.hotness_evaluator.evaluate_all(items)
+        # 按发布时间降序排序
+        sorted_items = sorted(items, key=lambda x: x.publish_date, reverse=True)
 
         # 生成报告文件名
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -258,15 +296,15 @@ class ReportGenerator:
 
         # 生成摘要内容
         summary_lines = []
-        summary_lines.append("# AI热点新闻摘要")
+        summary_lines.append("# AI新闻摘要")
         summary_lines.append("")
 
         # 决定显示哪些条目
         if top_n is None:
-            display_items = evaluated_items
-            display_count = len(evaluated_items)
+            display_items = sorted_items
+            display_count = len(sorted_items)
         else:
-            display_items = evaluated_items[:top_n]
+            display_items = sorted_items[:top_n]
             display_count = top_n
 
         # 按频道分组
@@ -295,7 +333,6 @@ class ReportGenerator:
 
             for item in channel_items:
                 summary_lines.append(f"### {item_counter}. {item.title}")
-                summary_lines.append(f"**热度**: {item.hotness_score:.1f}/10")
                 summary_lines.append(f"**来源**: {item.source} ({item.source_type})")
                 summary_lines.append(f"**发布时间**: {item.publish_date.strftime('%Y-%m-%d %H:%M') if item.publish_date else '未知'}")
                 summary_lines.append(f"**链接**: [阅读原文]({item.url})")
@@ -307,7 +344,7 @@ class ReportGenerator:
         # 统计信息
         summary_lines.append("## 📊 统计信息")
         summary_lines.append(f"- **生成时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        summary_lines.append(f"- **总条目数**: {len(evaluated_items)}")
+        summary_lines.append(f"- **总条目数**: {len(sorted_items)}")
         if top_n is None:
             summary_lines.append(f"- **显示**: 所有新闻条目 ({display_count}条)")
         else:
@@ -437,7 +474,6 @@ class ReportGenerator:
         """
         # 基本统计
         total_items = len(items)
-        hot_items = len([item for item in items if item.hotness_score >= 7.0]) if items else 0
 
         # 抓取器统计
         if orchestrator:
@@ -466,7 +502,6 @@ class ReportGenerator:
 
         # 生成统计文本
         stats_lines = []
-        stats_lines.append(f"- 热门条目（≥7分）: {hot_items}")
         stats_lines.append(f"- 24小时内新闻: {recent_24h}")
 
         if total_fetchers > 0:

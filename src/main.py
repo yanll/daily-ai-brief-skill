@@ -84,7 +84,7 @@ async def main():
         print(f"\n📰 所有新闻 ({len(items)} 条):")
         for i, item in enumerate(items, 1):
             print(f"{i}. {item.title}")
-            print(f"   热度: {item.hotness_score:.1f} | 来源: {item.source} | 时间: {item.publish_date.strftime('%Y-%m-%d %H:%M') if item.publish_date else '未知'}")
+            print(f"   来源: {item.source} | 时间: {item.publish_date.strftime('%Y-%m-%d %H:%M') if item.publish_date else '未知'}")
             print(f"   链接: {item.url}")
             if i < len(items):  # 不在最后一条后打印空行
                 print()
