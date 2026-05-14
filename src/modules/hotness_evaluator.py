@@ -259,7 +259,7 @@ class HotnessEvaluator:
         authoritative_sources = [
             "openai", "anthropic", "google", "deepmind", "meta", "microsoft",
             "arxiv", "neurips", "icml", "iclr", "mit", "stanford",
-            "nature", "science", "36氪", "机器之心", "量子位"
+            "nature", "science", "36氪", "量子位"
         ]
 
         source_lower = item.source.lower()

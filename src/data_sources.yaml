@@ -10,13 +10,6 @@ rss_sources:
     filters:
       include_keywords: [ "AI", "人工智能", "OpenAI", "模型", "芯片", "GPT", "Claude", "深度学习", "机器学习", "大模型" ]
 
-  - name: "机器之心"
-    url: "https://www.jiqizhixin.com/rss"
-    language: "zh"
-    enabled: true
-    priority: 1
-    num_items: 10
-
   - name: "量子位"
     url: "https://www.qbitai.com/feed"
     language: "zh"
