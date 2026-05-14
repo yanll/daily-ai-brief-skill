@@ -7,7 +7,7 @@ rss_sources:
     priority: 1
     num_items: 10
     filters:
-      include_keywords: [ "AI", "人工智能", "OpenAI", "模型", "芯片", "GPT", "Claude", "深度学习", "机器学习", "大模型" ]
+      include_keywords: [ "OpenClaw", "Anthropic", "AI", "人工智能", "OpenAI", "模型", "芯片", "GPT", "Claude", "深度学习", "机器学习", "大模型" ]
 
   - name: "量子位"
     url: "https://www.qbitai.com/feed"
