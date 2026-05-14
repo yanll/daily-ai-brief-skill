@@ -3,7 +3,7 @@ rss_sources:
   # ===== 国内媒体 =====
   - name: "36氪"
     url: "https://www.36kr.com/feed"
-    enabled: true
+    enabled: false
     priority: 1
     num_items: 10
     filters:
@@ -11,9 +11,12 @@ rss_sources:
 
   - name: "量子位"
     url: "https://www.qbitai.com/feed"
-    enabled: true
+    enabled: false
     priority: 1
     num_items: 10
+    filters:
+      include_keywords: [ "OpenClaw", "Anthropic", "AI", "人工智能", "OpenAI", "模型", "芯片", "GPT", "Claude", "深度学习", "机器学习", "大模型" ]
+
 
   - name: "虎嗅"
     enabled: false
@@ -23,65 +26,23 @@ rss_sources:
     url: "https://www.technologyreview.com/topic/artificial-intelligence/feed/"
     enabled: false
     priority: 1
-    num_items: 8
+    num_items: 5
 
   - name: "TechCrunch AI"
     url: "https://techcrunch.com/category/artificial-intelligence/feed/"
     enabled: false
     priority: 1
-    num_items: 8
-
-  - name: "The Verge AI"
-    url: "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml"
-    enabled: false
-    priority: 2
-    num_items: 6
+    num_items: 5
 
   - name: "Ars Technica AI"
     url: "https://arstechnica.com/tag/artificial-intelligence/feed/"
     enabled: false
     priority: 2
-    num_items: 6
-
-  - name: "VentureBeat AI"
-    url: "https://venturebeat.com/category/ai/feed/"
-    enabled: false
-    priority: 1
-    num_items: 8
-
-  - name: "Wired AI"
-    url: "https://www.wired.com/feed/tag/artificial-intelligence/latest/rss"
-    enabled: false
-    priority: 2
-    num_items: 6
-
-  - name: "CNBC Tech"
-    url: "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10001147"
-    enabled: false
-    priority: 2
-    num_items: 6
+    num_items: 5
 
   # ===== Newsletter / 周报 =====
   - name: "AI Weekly"
     url: "https://aiweekly.co/rss.xml"
-    enabled: false
-    priority: 2
-    num_items: 5
-
-  - name: "The Neuron Daily"
-    url: "https://theneurondaily.com/feed"
-    enabled: false
-    priority: 2
-    num_items: 5
-
-  - name: "TLDR AI"
-    url: "https://tldr.tech/api/ai/rss"
-    enabled: false
-    priority: 2
-    num_items: 5
-
-  - name: "Ben's Bites"
-    url: "https://bensbites.beehiiv.com/feed"
     enabled: false
     priority: 2
     num_items: 5
@@ -91,7 +52,7 @@ rss_sources:
     url: "https://simonwillison.net/atom/everything/"
     enabled: false
     priority: 1
-    num_items: 8
+    num_items: 5
 
   - name: "Gary Marcus"
     url: "https://garymarcus.substack.com/feed"
@@ -105,26 +66,8 @@ rss_sources:
     priority: 2
     num_items: 5
 
-  - name: "Understanding AI"
-    url: "https://understandingai.org/feed"
-    enabled: false
-    priority: 2
-    num_items: 5
-
   - name: "Cognitive Revolution"
     url: "https://cognitiverevolution.substack.com/feed"
-    enabled: false
-    priority: 2
-    num_items: 5
-
-  - name: "Interconnects"
-    url: "https://interconnects.ai/feed"
-    enabled: false
-    priority: 2
-    num_items: 5
-
-  - name: "AI Tidbits"
-    url: "https://aitidbits.substack.com/feed"
     enabled: false
     priority: 2
     num_items: 5
@@ -146,7 +89,7 @@ rss_sources:
     url: "https://rss.arxiv.org/rss/cs.AI"
     enabled: false
     priority: 2
-    num_items: 8
+    num_items: 5
 
   - name: "arXiv CS.LG"
     url: "https://rss.arxiv.org/rss/cs.LG"
@@ -154,14 +97,6 @@ rss_sources:
     priority: 3
     num_items: 5
 
-  # ===== 安全与批评视角 =====
-  - name: "Trail of Bits Blog"
-    url: "https://blog.trailofbits.com/feed/"
-    enabled: false
-    priority: 2
-    num_items: 5
-    filters:
-      include_keywords: [ "AI", "machine learning", "LLM", "security" ]
 
   - name: "Palo Alto Networks Blog"
     url: "https://www.paloaltonetworks.com/blog/feed/"
@@ -169,7 +104,7 @@ rss_sources:
     priority: 2
     num_items: 5
     filters:
-      include_keywords: [ "AI", "artificial intelligence", "machine learning" ]
+      include_keywords: [ "AI", "ChatGPT", "Anthropic", "artificial intelligence", "machine learning", "LLM", "security" ]
 
   # ===== 官方可用博客 =====
   - name: "DeepMind Blog"
@@ -178,28 +113,28 @@ rss_sources:
     priority: 1
     num_items: 10
 
-# Reddit API数据源（替代被屏蔽RSS）
+# Reddit API数据源
 reddit_sources:
   - name: "Reddit MachineLearning"
     type: "reddit"
     subreddit: "MachineLearning"
-    enabled: false
+    enabled: true
     priority: 2
-    num_items: 10
+    num_items: 5
 
   - name: "Reddit LocalLLaMA"
     type: "reddit"
     subreddit: "LocalLLaMA"
-    enabled: false
+    enabled: true
     priority: 2
-    num_items: 10
+    num_items: 5
 
   - name: "Reddit Artificial"
     type: "reddit"
     subreddit: "artificial"
-    enabled: false
+    enabled: true
     priority: 2
-    num_items: 8
+    num_items: 5
 
   - name: "Reddit Singularity"
     type: "reddit"
@@ -244,25 +179,25 @@ x_sources:
     usernames: [ "AYi_AInotes", "MiniMax_AI" ]
     enabled: true
     priority: 2
-    num_items: 2
+    num_items: 5
 
   - name: "AI研究"
     usernames: [ "berryxia", "MSFTResearch", "karpathy", "swyx", "vista8", "ylecun", "ilyasut", "emollick", "nathanbenaich" ]
     enabled: false
     priority: 2
-    num_items: 8
+    num_items: 5
 
   - name: "AI机构账号"
     usernames: [ "OpenAI", "AnthropicAI", "GoogleDeepMind", "MetaAI", "nvidiaai" ]
     enabled: false
     priority: 1
-    num_items: 8
+    num_items: 5
 
   - name: "AI媒体账号"
     usernames: [ "TechCrunchAI", "techreviewAI", "vergeai" ]
     enabled: false
     priority: 2
-    num_items: 6
+    num_items: 5
 
   - name: "Sam Altman"
     username: "sama"
@@ -310,7 +245,7 @@ web_scrapers:
     selector: "article, .story, .news-item"
     enabled: false
     priority: 1
-    num_items: 8
+    num_items: 5
     use_playwright: true
 
   - name: "Reuters AI"
@@ -318,7 +253,7 @@ web_scrapers:
     selector: "article, .story, .news-article"
     enabled: false
     priority: 1
-    num_items: 8
+    num_items: 5
     use_playwright: true
 
 # API数据源配置
@@ -329,7 +264,7 @@ api_sources:
     params: { }
     enabled: false
     priority: 1
-    num_items: 10
+    num_items: 5
 
 # 数据获取配置
 fetch_config:
