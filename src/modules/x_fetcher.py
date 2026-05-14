@@ -78,48 +78,7 @@ class XFetcher(BaseFetcher):
         self.logger.info(f"X/Twitter抓取需要真实实现，跳过模拟数据: {username}")
         return []
 
-        # 如果需要模拟数据用于测试，可以取消下面的注释
-        # self.logger.warning(f"X/Twitter抓取器使用模拟数据，需要实现真实爬取逻辑: {username}")
-        #
-        # # 模拟数据
-        # mock_tweets = [
-        #     {
-        #         "title": f"AI breakthrough announced by {username}",
-        #         "content": f"Exciting news about AI developments from {username}. This is a simulated tweet content.",
-        #         "url": f"https://twitter.com/{username}/status/1234567890",
-        #         "date": datetime.now() - timedelta(hours=2),
-        #     },
-        #     {
-        #         "title": f"New research paper from {username}",
-        #         "content": f"Just published a new paper on machine learning. Read more at the link.",
-        #         "url": f"https://twitter.com/{username}/status/1234567891",
-        #         "date": datetime.now() - timedelta(days=1),
-        #     },
-        # ]
-        #
-        # items = []
-        # for tweet in mock_tweets:
-        #     content = self.cleanup_content(tweet["content"])
-        #     item = NewsItem(
-        #         title=tweet["title"],
-        #         url=tweet["url"],
-        #         content=content,
-        #         summary=self.cleanup_content(content[:200]),
-        #         source=self.name,
-        #         source_type="twitter",
-        #         language=self.language,
-        #         publish_date=tweet["date"],
-        #         author=username,
-        #         tags=["twitter", "ai"],
-        #         metadata={
-        #             "username": username,
-        #             "platform": "twitter",
-        #             "simulated": True,  # 标记为模拟数据
-        #         }
-        #     )
-        #     items.append(item)
-        #
-        # return items
+
 
 
 class XPlaywrightFetcher(BaseFetcher):
