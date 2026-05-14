@@ -1,18 +1,18 @@
 ---
 name: daily-ai-brief-skill
-description: 一个简洁高效的AI新闻简报生成技能，专为Claude Code和OpenClaw优化。每日自动从多个可靠数据源采集AI领域最新动态，生成干净的Markdown格式简报，帮助您快速掌握AI行业前沿信息。
+description: 一个简洁高效的AI新闻简报生成技能。每日自动从多个可靠数据源采集AI领域最新动态，生成干净的Markdown格式简报，帮助您快速掌握AI行业前沿信息。
 author: ideamac
 version: 1.0.0
-tags: [ai, news, aggregator, claude, openclaw]
+tags: [ai, news, aggregator]
 ---
 
 # AI Daily Brief Skill
 
-一个专为Claude Code和OpenClaw设计的AI新闻聚合技能，每日自动从数十个高质量数据源采集AI领域最新动态，生成结构化、热度排序的新闻简报。
+一个AI新闻聚合技能，每日自动从数十个高质量数据源采集AI领域最新动态，生成结构化、热度排序的新闻简报。
 
 ## 功能特性
 
-- **多源采集**: 支持RSS、Reddit、X/Twitter、网页爬虫、API、WebSearch（搜索引擎）等多种数据源
+- **多源采集**: 支持RSS、Reddit、X/Twitter、网页爬虫、API等多种数据源
 - **智能过滤**: 基于关键词和时效性自动过滤内容
 - **热度评估**: 根据多家媒体报道、社区传播、权威性等多维度评估新闻热度
 - **多格式输出**: 支持Markdown、JSON等多种报告格式
@@ -26,7 +26,6 @@ tags: [ai, news, aggregator, claude, openclaw]
 - **学术研究**: OpenAI Blog、Hugging Face Blog、arXiv CS.AI/CS.LG等
 - **社区平台**: Reddit (MachineLearning, LocalLLaMA等)、X/Twitter关键账号
 - **行业动态**: Hacker News、行业博客等
-- **搜索引擎**: Google、Bing等（通过WebSearch集成）
 
 ## 安装使用
 
@@ -66,7 +65,6 @@ python src/main.py
 5. **api_sources**: API接口配置
 6. **fetch_config**: 抓取全局配置
 7. **search_keywords**: 搜索关键词矩阵
-8. **web_search_sources**: WebSearch搜索引擎配置
 
 ### 过滤配置
 
