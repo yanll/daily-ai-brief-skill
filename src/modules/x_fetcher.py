@@ -44,9 +44,24 @@ class XFetcher(BaseFetcher):
 
         # 尝试使用Playwright进行真实抓取
         try:
-            # 创建Playwright抓取器配置
+            # 创建Playwright抓取器配置，合并全局fetch配置
             playwright_config = self.config.copy()
             playwright_config["use_playwright"] = True
+
+            # 获取全局抓取配置
+            from .config import get_config_loader
+            config_loader = get_config_loader()
+            fetch_config = config_loader.get_fetch_config()
+
+            # 合并重要配置
+            if "playwright_wait_seconds" in fetch_config:
+                playwright_config["playwright_wait_seconds"] = fetch_config["playwright_wait_seconds"]
+            if "user_agent" in fetch_config:
+                playwright_config["user_agent"] = fetch_config["user_agent"]
+            if "timeout_seconds" in fetch_config:
+                playwright_config["timeout_seconds"] = fetch_config["timeout_seconds"]
+
+            self.logger.debug(f"创建XPlaywrightFetcher配置: {list(playwright_config.keys())}")
             playwright_fetcher = XPlaywrightFetcher(playwright_config)
             items = await playwright_fetcher.fetch()
 
@@ -81,6 +96,10 @@ class XPlaywrightFetcher(BaseFetcher):
         self.use_playwright = config.get("use_playwright", True)
         self.playwright_wait_seconds = config.get("playwright_wait_seconds", 2)
         self.logger = logging.getLogger(f"XPlaywrightFetcher.{self.name}")
+
+        # 如果只有一个用户名，添加到列表中
+        if self.username and not self.usernames:
+            self.usernames = [self.username]
 
     async def fetch(self) -> List[NewsItem]:
         """
@@ -170,18 +189,18 @@ class XPlaywrightFetcher(BaseFetcher):
         """
         self.logger.info(f"爬取用户: @{username}")
 
-        # Nitter实例列表（按优先级排序） - 扩展列表
+        # Nitter实例列表（按优先级排序） - 更新列表，基于可用性测试
         nitter_instances = [
-            "https://nitter.net",  # 主要实例
-            "https://nitter.tiekoetter.com",
-            "https://nitter.privacydev.net",
-            "https://nitter.fdn.fr",
-            "https://nitter.1d4.us",
-            "https://nitter.unixfox.eu",
-            "https://nitter.nixnet.services",
-            "https://nitter.poast.org",
-            "https://nitter.weiler.rocks",
-            "https://nitter.sethforprivacy.com",
+            "https://nitter.tiekoetter.com",  # 已验证可用
+            "https://nitter.weiler.rocks",     # 返回内容但需验证选择器
+            "https://nitter.net",              # 主要实例（可能被屏蔽）
+            "https://nitter.privacydev.net",   # 证书错误
+            "https://nitter.fdn.fr",           # 连接关闭
+            "https://nitter.1d4.us",           # 连接关闭
+            "https://nitter.unixfox.eu",       # 连接关闭
+            "https://nitter.nixnet.services",  # 401 需要认证
+            "https://nitter.poast.org",        # 连接失败
+            "https://nitter.sethforprivacy.com", # 连接关闭
         ]
 
         for nitter_base in nitter_instances:
@@ -211,17 +230,22 @@ class XPlaywrightFetcher(BaseFetcher):
                     self.logger.warning(f"Nitter实例返回状态码 {response.status}: {nitter_base}")
                     continue
 
-                # 等待更长的时间让页面加载
-                for wait_seconds in [2, 3, 5]:
+                # 等待更长的时间让页面加载，使用配置的等待时间
+                wait_times = [
+                    self.playwright_wait_seconds,
+                    self.playwright_wait_seconds * 2,
+                    self.playwright_wait_seconds * 3
+                ]
+                for wait_seconds in wait_times:
                     await page.wait_for_timeout(wait_seconds * 1000)
 
                     # 检查页面是否包含有效内容
                     content = await page.content()
                     content_length = len(content)
-                    self.logger.debug(f"等待 {wait_seconds} 秒后内容大小: {content_length} 字节")
+                    self.logger.info(f"等待 {wait_seconds} 秒后内容大小: {content_length} 字节")
 
-                    # 如果内容过少，跳过这个实例
-                    if content_length < 500:
+                    # 如果内容过少，跳过这个实例（提高阈值）
+                    if content_length < 10000:
                         self.logger.warning(f"Nitter实例返回内容过少 ({content_length} 字节): {nitter_base}")
                         continue
 
@@ -266,9 +290,13 @@ class XPlaywrightFetcher(BaseFetcher):
                             tweets = await page.locator(selector).all()
                             if tweets:
                                 self.logger.info(f"找到 {len(tweets)} 个推文 (选择器: {selector})")
-                                for tweet in tweets[:self.max_items]:
+                                for tweet_locator in tweets[:self.max_items]:
                                     try:
-                                        item = await self._parse_tweet_element(tweet, username)
+                                        # 将Locator转换为ElementHandle
+                                        tweet_element = await tweet_locator.element_handle()
+                                        if not tweet_element:
+                                            continue
+                                        item = await self._parse_tweet_element(tweet_element, username, nitter_base)
                                         if item:
                                             items.append(item)
                                     except Exception as e:
@@ -292,31 +320,46 @@ class XPlaywrightFetcher(BaseFetcher):
         self.logger.error(f"所有Nitter实例均失败: @{username}")
         return []
 
-    async def _parse_tweet_element(self, tweet_element, username: str) -> NewsItem:
+    async def _parse_tweet_element(self, tweet_element, username: str, nitter_base: str = None) -> NewsItem:
         """
         解析推文元素
 
         Args:
-            tweet_element: 推文元素
+            tweet_element: 推文元素 (ElementHandle)
             username: 用户名
+            nitter_base: Nitter实例基址，用于构建绝对链接
 
         Returns:
             新闻条目
         """
-        # 这里需要实现具体的DOM解析逻辑
-        # 由于X/Twitter页面结构可能变化，此代码需要定期更新
+        # 改进的解析逻辑，针对nitter实例优化
+        # 首先尝试获取推文正文内容
+        content_elem = await tweet_element.query_selector('.tweet-content')
+        if content_elem:
+            title = await content_elem.inner_text()
+        else:
+            title = await tweet_element.inner_text()
 
-        # 示例解析逻辑（需要根据实际页面调整）
-        title = await tweet_element.inner_text()
-        title = title[:200]  # 截断
+        title = title.strip()
+        if len(title) > 200:
+            title = title[:200]  # 截断
 
-        # 尝试提取链接
+        # 默认实例基址
+        if nitter_base is None:
+            nitter_base = "https://nitter.tiekoetter.com"
+
+        # 尝试提取推文链接
         link_elements = await tweet_element.query_selector_all('a[href*="/status/"]')
-        url = f"https://nitter.net/{username}"
+        url = f"{nitter_base}/{username}"  # 使用当前实例
         if link_elements:
             href = await link_elements[0].get_attribute("href")
             if href:
-                url = f"https://nitter.net{href}"
+                # 转换为绝对链接
+                if href.startswith('/'):
+                    # 使用当前实例基址
+                    url = f"{nitter_base}{href}"
+                elif href.startswith('http'):
+                    url = href
 
         # 尝试提取时间
         time_elements = await tweet_element.query_selector_all('time')
@@ -328,8 +371,17 @@ class XPlaywrightFetcher(BaseFetcher):
                     publish_date = datetime.fromisoformat(datetime_str.replace("Z", "+00:00"))
                 except ValueError:
                     pass
+        else:
+            # 备选：查找包含日期的元素
+            date_elem = await tweet_element.query_selector('.tweet-date, .date, .published')
+            if date_elem:
+                date_text = await date_elem.inner_text()
+                # 简单解析日期文本（可改进）
+                # 暂时忽略
 
         title_clean = self.cleanup_content(title)
+        # 从nitter_base提取实例名
+        instance_name = nitter_base.replace('https://', '').replace('http://', '').split('/')[0]
         item = NewsItem(
             title=title_clean,
             url=url,
@@ -343,6 +395,7 @@ class XPlaywrightFetcher(BaseFetcher):
                 "username": username,
                 "platform": "twitter",
                 "fetched_with": "playwright",
+                "nitter_instance": instance_name,
             }
         )
 

@@ -118,7 +118,7 @@ rss_sources:
 x_sources:
   - name: "OpenRouter"
     username: "OpenRouter"
-    enabled: true
+    enabled: false
     priority: 1
     num_items: 5
 
@@ -181,7 +181,7 @@ web_scrapers:
   - name: "Google DeepMind Blog"
     url: "https://deepmind.google/blog/"
     selector: "article"
-    enabled: false
+    enabled: true
     priority: 1
     num_items: 5
     use_playwright: true
@@ -252,4 +252,4 @@ fetch_config:
     - "广告"
     - "推广"
   max_age_hours: 72
-  playwright_wait_seconds: 2
+  playwright_wait_seconds: 5
